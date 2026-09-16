@@ -12,7 +12,7 @@ Usage:
   python brief.py --mode monday --email tung19628@gmail.com --no-draft
   python brief.py --mode daily --email tung19628@gmail.com
 Output: OUT_DIR/brief-YYYY-MM-DD-(daily|monday).md + .html, index.html, docs/ copy for Pages
-Flags: --no-draft (skip Gmail), --no-html (skip HTML)
+Flags: --no-draft (skip Gmail), --no-html (skip HTML), --no-push (skip docs/ auto-push)
 """
 import argparse
 import datetime
@@ -20,6 +20,7 @@ import html
 import json
 import os
 import re
+import subprocess
 import urllib.parse
 import urllib.request
 import xml.etree.ElementTree as ET
@@ -330,6 +331,36 @@ def export_docs(html_files):
         if src.endswith(".html"):
             shutil.copy(src, os.path.join(DOCS_DIR, os.path.basename(src)))
 
+def auto_push_docs(date_str, mode, docs_files):
+    """Best-effort git add/commit/push of the given docs/*.html files so Pages auto-updates.
+    Only the listed files are staged (never token/credentials).
+    Never raises: scheduler runs must not fail because push failed."""
+    try:
+        env = dict(os.environ, GIT_TERMINAL_PROMPT="0")
+        def run(*a):
+            return subprocess.run(a, cwd=BASE_DIR, env=env, capture_output=True,
+                                  text=True, timeout=90)
+        r = run("git", "rev-parse", "--is-inside-work-tree")
+        if r.returncode != 0:
+            return False, "not a git repo, push skipped."
+        r = run("git", "add", "--", *docs_files)
+        if r.returncode != 0:
+            return False, f"git add failed: {(r.stderr or r.stdout).strip()[:150]}"
+        st = run("git", "status", "--porcelain", "--", "docs")
+        if not st.stdout.strip():
+            return True, "docs/ unchanged, nothing to push."
+        c = run("git", "commit", "-m", f"brief {date_str} ({mode}) auto-publish")
+        if c.returncode != 0:
+            return False, f"commit failed: {(c.stderr or c.stdout).strip()[:200]}"
+        p = run("git", "push")
+        if p.returncode != 0 and "upstream" in ((p.stderr or "") + (p.stdout or "")).lower():
+            p = run("git", "push", "-u", "origin", "HEAD")
+        if p.returncode != 0:
+            return False, f"push failed: {(p.stderr or p.stdout).strip()[:200]}"
+        return True, "Pushed docs/ - Pages rebuilds in ~1 min."
+    except Exception as e:
+        return False, f"push skipped: {e}"
+
 def try_gmail_draft(subject, body_text, to_email):
     """Best-effort Gmail draft. Requires google-api-python-client + credentials.json. Returns (ok, msg)."""
     try:
@@ -380,6 +411,7 @@ def main():
     ap.add_argument("--email", default="tung19628@gmail.com")
     ap.add_argument("--no-draft", action="store_true", help="skip Gmail, just save file")
     ap.add_argument("--no-html", action="store_true", help="skip HTML, md only")
+    ap.add_argument("--no-push", action="store_true", help="skip auto-push of docs/ to GitHub")
     args = ap.parse_args()
 
     os.makedirs(OUT_DIR, exist_ok=True)
@@ -427,13 +459,22 @@ def main():
         # docs/ export for GitHub Pages (html only, never token/credentials):
         # copy every brief-*.html so docs/index never links to a missing file,
         # then rebuild docs/index.html from what is actually in docs/.
+        seen = list(dict.fromkeys(html_files))
         for fn, _, _ in entries:
-            html_files.append(os.path.join(OUT_DIR, fn))
-        export_docs(html_files)
+            p = os.path.join(OUT_DIR, fn)
+            if p not in seen:
+                seen.append(p)
+        export_docs(seen)
         docs_entries = list_html_entries(DOCS_DIR)
         with open(os.path.join(DOCS_DIR, "index.html"), "w", encoding="utf-8") as f:
             f.write(render_index_html(docs_entries))
-        print(f"Exported to docs/: {sorted(os.path.basename(p) for p in html_files)}")
+        print(f"Exported to docs/: {sorted(os.path.basename(p) for p in seen)}")
+        if not args.no_push:
+            docs_rel = [os.path.join("docs", os.path.basename(p)) for p in seen]
+            _, msg = auto_push_docs(date_str, mode, docs_rel)
+            print(msg)
+        else:
+            print("Push skipped (--no-push).")
     else:
         print("HTML skipped (--no-html).")
 

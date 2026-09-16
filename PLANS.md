@@ -23,6 +23,7 @@ Stop reading brief inside Gmail. Same brief content as static public website, ch
 - Files: brief.py render_index_html(), docs/ export, --no-html flag
 - Output: brief-YYYY-MM-DD-daily.html, brief-YYYY-MM-DD-monday.html, index.html
 - Status: Done 2026-09-16 (docs/ html-only, index rebuilt from docs dir, supervisor PASS)
+- Auto-publish 2026-09-16: brief.py auto-pushes docs/*.html after each run (default on, --no-push to skip; commit checked, upstream fallback, never crashes run). Fixed run-daily.cmd/run-monday.cmd dead Documents path -> Projects path, re-enabled Brief-Daily-9am-VN + Brief-Monday-9am-VN (Ready).
 
 ## Scope
 - In: 3 render functions, save alongside .md, docs/ copy for Pages, keep .md + Gmail
