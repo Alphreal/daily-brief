@@ -1,8 +1,9 @@
 #!/usr/bin/env python3
 """Build guidebook DOC*.md into styled HTML (same shell as brief.py). Stdlib only.
 
-Usage: python guidebook/build.py [--no-push]
-Output: guidebook/*.html + docs/guidebook/*.html (for Pages).
+Usage: python guidebook/build.py
+Output: guidebook/*.html + OUT_DIR/guidebook/*.html + docs/guidebook/*.html.
+Publish with: git add guidebook docs/guidebook && git commit -m ... && git push
 """
 import os
 import re
@@ -26,6 +27,7 @@ DOCS = [
 def inline(s):
     s = brief.esc(s)
     s = re.sub(r"\*\*(.+?)\*\*", r"<b>\1</b>", s)
+    s = re.sub(r"(?<!\*)\*([^*\n]+)\*(?!\*)", r"<i>\1</i>", s)
     s = re.sub(r"\[([^\]]+)\]\(([^)]+)\)", r'<a href="\2">\1</a>', s)
     return s
 
@@ -46,14 +48,20 @@ def md_to_html(text):
         elif ln.strip() == "---":
             out.append("<hr>")
         elif ln.startswith("> "):
-            out.append(f'<div class="tldr">{inline(ln[2:])}</div>')
+            quotes = []
+            while i < len(lines) and lines[i].strip().startswith("> "):
+                quotes.append(inline(lines[i].strip()[2:]))
+                i += 1
+            out.append('<div class="tldr">' + "<br>".join(quotes) + "</div>")
+            continue
         elif ln.startswith("|"):
             tbl, hdr = ["<div class='card'><table>"], True
             while i < len(lines) and lines[i].strip().startswith("|"):
-                cells = [inline(c.strip()) for c in lines[i].strip().strip("|").split("|")]
-                if all(set(c) <= set("-: ") for c in cells):
+                raw = [c.strip() for c in lines[i].strip().strip("|").split("|")]
+                if all(c and set(c) <= set("-: ") for c in raw):
                     i += 1
                     continue
+                cells = [inline(c) for c in raw]
                 tag = "th" if hdr else "td"
                 tbl.append("<tr>" + "".join(f"<{tag}>{c}</{tag}>" for c in cells) + "</tr>")
                 hdr, i = False, i + 1
@@ -81,36 +89,44 @@ def md_to_html(text):
     return "\n".join(out)
 
 
+SHELL_TOPBAR = '<div class="topbar"><a href="index.html">&larr; Alph</a><span class="muted">Daily Brief</span></div>'
+
+
+def swap_topbar(page, nav):
+    assert page.count(SHELL_TOPBAR) == 1, "brief.html_shell topbar changed - update SHELL_TOPBAR"
+    return page.replace(SHELL_TOPBAR, nav)
+
+
 def main():
+    out_local = os.path.join(brief.OUT_DIR, "guidebook")
     os.makedirs(PAGES_DIR, exist_ok=True)
+    os.makedirs(out_local, exist_ok=True)
     built = []
     for fn, label in DOCS:
         with open(os.path.join(GB_DIR, fn), encoding="utf-8") as f:
             body = md_to_html(f.read())
         nav = '<div class="topbar"><a href="index.html">&larr; Alph</a><span class="muted">Guidebook</span></div>'
-        page = brief.html_shell(label, body)
-        # html_shell has its own topbar; strip ours in favor of page-level one
-        html = page.replace(
-            '<div class="topbar"><a href="index.html">&larr; Alph</a><span class="muted">Daily Brief</span></div>',
-            nav,
-        )
-        out = os.path.join(GB_DIR, fn.replace(".md", ".html"))
+        html = swap_topbar(brief.html_shell(label, body), nav)
+        name = fn.replace(".md", ".html")
+        out = os.path.join(GB_DIR, name)
         with open(out, "w", encoding="utf-8") as f:
             f.write(html)
-        shutil.copy(out, os.path.join(PAGES_DIR, os.path.basename(out)))
-        built.append(os.path.basename(out))
+        shutil.copy(out, os.path.join(PAGES_DIR, name))
+        shutil.copy(out, os.path.join(out_local, name))
+        built.append(name)
         print(f"Built: {out}")
     idx_body = "<h1>Guidebook</h1>" + "".join(
-        f'<div class="card"><a href="{fn.replace(".md", ".html")}"><b>{label}</b></a></div>'
+        f'<div class="card"><a href="{fn.replace(".md", ".html")}"><b>{brief.esc(label)}</b></a></div>'
         for fn, label in DOCS
     )
-    idx = brief.html_shell("Guidebook", idx_body).replace(
-        '<div class="topbar"><a href="index.html">&larr; Alph</a><span class="muted">Daily Brief</span></div>',
+    idx = swap_topbar(
+        brief.html_shell("Guidebook", idx_body),
         '<div class="topbar"><a href="../index.html">&larr; Alph</a><span class="muted">Guidebook</span></div>',
     )
     with open(os.path.join(GB_DIR, "index.html"), "w", encoding="utf-8") as f:
         f.write(idx)
     shutil.copy(os.path.join(GB_DIR, "index.html"), os.path.join(PAGES_DIR, "index.html"))
+    shutil.copy(os.path.join(GB_DIR, "index.html"), os.path.join(out_local, "index.html"))
     print(f"Built index + published to docs/guidebook/: {built + ['index.html']}")
 
 
