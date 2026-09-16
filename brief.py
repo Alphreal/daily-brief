@@ -188,7 +188,10 @@ def render_daily_md(date_str, feeds):
     L.append("")
     # TL;DR: first item of each feed = top pick
     L.append("## TL;DR - 3 to read first")
-    for name, (t, l, s, p) in tldr_picks(feeds):
+    picks = tldr_picks(feeds)
+    if not picks:
+        L.append("- All feeds failed today - see sections below, or rerun later.")
+    for name, (t, l, s, p) in picks:
         L.append(f"- [{name}] {t}")
         if s:
             L.append(f"  In short: {s}")
@@ -246,7 +249,10 @@ h1{{font-size:26px;margin:8px 0}}h2{{font-size:19px;margin:0 0 8px}}
 
 def render_daily_html(date_str, feeds):
     tldr = ['<div class="tldr"><h2>TL;DR &mdash; 3 to read first</h2>']
-    for name, (t, l, s, p) in tldr_picks(feeds):
+    picks = tldr_picks(feeds)
+    if not picks:
+        tldr.append('<div class="card muted">All feeds failed today &mdash; see sections below, or rerun later.</div>')
+    for name, (t, l, s, p) in picks:
         tldr.append(f'<div class="card"><span class="badge">{esc(name)}</span>'
                     f'<a href="{esc(l)}"><b>{esc(t)}</b></a>'
                     + (f'<div class="muted">{esc(s)}</div>' if s else '') + '</div>')
