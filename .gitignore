@@ -1,0 +1,21 @@
+# Secrets — never commit (Google OAuth client + tokens used by brief.py)
+credentials.json
+token.json
+**/token.json
+
+# Generated briefs / local output
+out/
+brief-out/
+
+# Logs / temp
+*.log
+.opencode/*.log
+
+# Dependencies
+node_modules/
+
+# OS / editor
+Thumbs.db
+Desktop.ini
+.vscode/
+*.swp

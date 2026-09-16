@@ -1,0 +1,812 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>OpenCode Parallel Dashboard (Option A prototype)</title>
+<style>
+  :root {
+    color-scheme: dark;
+    --bg:#0a0a0a; --panel:#111113; --panel2:#17171a; --input:#1c1c20;
+    --border:rgba(255,255,255,.09); --border-soft:rgba(255,255,255,.06);
+    --text:#eeeeee; --muted:#9a9aa0; --weak:#6e6e76;
+    --primary:#fab283; --primary-ink:#1a1208; --accent:#9d7cd8;
+    --chosen:#7fd88f; --danger:#e06c75; --info:#56b6c2;
+    --radius:12px; --shadow:0 8px 28px rgba(0,0,0,.45);
+  }
+  * { box-sizing: border-box; }
+  body { margin:0; height:100vh; display:flex; flex-direction:column; background:var(--bg); color:var(--text);
+    font-family: Inter, ui-sans-serif, system-ui, "Segoe UI", Roboto, sans-serif; font-size:14px; }
+  code { font-family: ui-monospace, "JetBrains Mono", Consolas, monospace; font-size:12px;
+    background:rgba(255,255,255,.06); padding:2px 6px; border-radius:6px; border:1px solid var(--border-soft); }
+  header { display:flex; gap:10px; align-items:center; padding:10px 14px; flex-wrap:wrap;
+    background:rgba(17,17,19,.9); backdrop-filter:blur(8px); border-bottom:1px solid var(--border); }
+  .brand { display:flex; align-items:center; gap:9px; font-weight:650; letter-spacing:.1px; }
+  .brand .logo { width:22px; height:22px; border-radius:7px;
+    background:linear-gradient(135deg,var(--primary),var(--accent)); display:inline-block; box-shadow:var(--shadow); }
+  .pill { display:flex; align-items:center; gap:7px; background:var(--panel2); border:1px solid var(--border);
+    border-radius:999px; padding:5px 11px; font-size:12.5px; color:var(--muted); }
+  #statusDot { width:8px; height:8px; border-radius:50%; background:#999; display:inline-block; box-shadow:0 0 8px currentColor; }
+  header input[type=text], header input:not([type]) { background:var(--input); color:var(--text);
+    padding:7px 10px; border:1px solid var(--border); border-radius:9px; outline:none; }
+  header input:focus, textarea:focus { border-color:rgba(250,178,131,.6); box-shadow:0 0 0 3px rgba(250,178,131,.15); }
+  label.demo { display:flex; align-items:center; gap:6px; color:var(--muted); font-size:13px; }
+  button { padding:7px 12px; border-radius:9px; border:1px solid var(--border); cursor:pointer;
+    background:var(--panel2); color:var(--text); font-weight:550; transition:.15s; }
+  button:hover { border-color:rgba(255,255,255,.2); transform:translateY(-1px); }
+  button:active { transform:translateY(0); }
+  #btnBoth, button[data-act="send"] { background:var(--primary); border-color:transparent; color:var(--primary-ink); font-weight:700; }
+  #btnBoth:hover, button[data-act="send"]:hover { filter:brightness(1.06); }
+  button[data-act="choose"] { border-color:rgba(127,216,143,.4); }
+  #banner { margin:10px 14px 0; padding:9px 12px; font-size:13px; color:var(--text);
+    background:rgba(245,167,66,.1); border:1px solid rgba(245,167,66,.3); border-radius:10px; display:none; }
+  #fanout { display:flex; gap:10px; padding:12px 14px; }
+  #fanout textarea { flex:1; min-height:56px; padding:11px 12px; border-radius:var(--radius);
+    border:1px solid var(--border); background:var(--panel); color:var(--text); resize:vertical; outline:none;
+    box-shadow:var(--shadow); }
+  #fanout textarea::placeholder, .pane-input textarea::placeholder { color:var(--weak); }
+  #fanout > div { display:flex; flex-direction:column; gap:8px; min-width:132px; }
+  #fanout .hint { font-size:11.5px; color:var(--weak); text-align:center; }
+  #mergetools { display:flex; gap:8px; align-items:center; padding:0 14px 12px; flex-wrap:wrap; }
+  #mergetools .hint { font-size:12px; color:var(--weak); }
+  main#desktop { flex:1; min-height:0; position:relative; overflow:hidden; margin:0 14px 10px;
+    background:radial-gradient(circle at 1px 1px, rgba(255,255,255,.07) 1px, transparent 1px);
+    background-size:22px 22px; border:1px solid var(--border-soft); border-radius:14px; }
+  .window { position:absolute; display:flex; flex-direction:column; min-width:300px; min-height:260px;
+    background:var(--panel); border:1px solid var(--border); border-radius:14px; overflow:hidden;
+    box-shadow:var(--shadow); will-change:left,top,width,height;
+    transition:left .18s ease, top .18s ease, width .18s ease, height .18s ease, box-shadow .15s, border-color .15s; }
+  .window.dragging, .window.resizing { transition:none; }
+  .window.focused { border-color:rgba(250,178,131,.55); box-shadow:0 12px 40px rgba(0,0,0,.55), 0 0 0 2px rgba(250,178,131,.18); }
+  .window.minimized { display:none; }
+  .window.maximized { border-radius:10px; }
+  .window.maximized .rh { display:none; }
+  .rh { position:absolute; z-index:5; touch-action:none; }
+  .rh-n { left:10px; right:10px; top:-4px; height:8px; cursor:ns-resize; }
+  .rh-s { left:10px; right:10px; bottom:-4px; height:8px; cursor:ns-resize; }
+  .rh-e { top:10px; bottom:10px; right:-4px; width:8px; cursor:ew-resize; }
+  .rh-w { top:10px; bottom:10px; left:-4px; width:8px; cursor:ew-resize; }
+  .rh-ne { right:-5px; top:-5px; width:14px; height:14px; cursor:nesw-resize; }
+  .rh-sw { left:-5px; bottom:-5px; width:14px; height:14px; cursor:nesw-resize; }
+  .rh-nw { left:-5px; top:-5px; width:14px; height:14px; cursor:nwse-resize; }
+  .rh-se { right:-5px; bottom:-5px; width:14px; height:14px; cursor:nwse-resize; border-bottom-right-radius:14px; }
+  .rh-se::after { content:''; position:absolute; right:3px; bottom:3px; width:9px; height:9px;
+    border-right:2px solid rgba(255,255,255,.35); border-bottom:2px solid rgba(255,255,255,.35); border-bottom-right-radius:4px; }
+  #snapPreview { position:absolute; z-index:1; display:none; background:rgba(250,178,131,.14);
+    border:2px solid rgba(250,178,131,.55); border-radius:12px; pointer-events:none; }
+  #snapLabel { position:absolute; top:6px; left:10px; font-size:11px; font-weight:700; color:var(--primary);
+    text-transform:uppercase; letter-spacing:.6px; }
+  #inspector { padding:0; }
+  #inspector .insp-body { overflow:auto; padding:12px; display:flex; flex-direction:column; gap:10px; min-height:0; flex:1; }
+  #inspector h3 { margin:0; font-size:13px; color:var(--muted); text-transform:uppercase; letter-spacing:.6px; }
+  #inspector .note { font-size:11.5px; color:var(--weak); line-height:1.5; }
+  .insp-card { background:var(--panel2); border:1px solid var(--border-soft); border-radius:10px; padding:9px 10px; font-size:12.5px; }
+  .insp-card h4 { margin:0 0 6px; font-size:12.5px; }
+  .insp-card .row { display:flex; justify-content:space-between; gap:8px; padding:2px 0; color:var(--muted); }
+  .insp-card .row b { color:var(--text); font-weight:600; }
+  .insp-card .err { color:var(--danger); white-space:pre-wrap; word-break:break-word; }
+  .insp-card .ok { color:var(--chosen); }
+  .insp-card code { max-width:100%; overflow:hidden; text-overflow:ellipsis; display:inline-block; vertical-align:bottom; }
+  .pane { background:var(--panel); }
+  .pane.chosen { border-color:rgba(127,216,143,.7); box-shadow:0 0 0 2px rgba(127,216,143,.35), var(--shadow); }
+  .pane-head { display:flex; gap:7px; align-items:center; padding:8px 10px; flex-wrap:wrap; cursor:move; user-select:none;
+    background:var(--panel2); border-bottom:1px solid var(--border-soft); touch-action:none; }
+  .pane-head button { cursor:pointer; }
+  .winbtn { padding:4px 9px; font-size:12px; line-height:1.2; }
+  .win-spacer { flex:1; }
+  .avatar { width:24px; height:24px; border-radius:8px; display:inline-flex; align-items:center; justify-content:center;
+    font-size:13px; font-weight:700; }
+  .avatar.left { background:rgba(250,178,131,.16); border:1px solid rgba(250,178,131,.4); }
+  .avatar.right { background:rgba(157,124,216,.16); border:1px solid rgba(157,124,216,.45); }
+  .avatar.merge { background:rgba(127,216,143,.14); border:1px solid rgba(127,216,143,.45); }
+  .pane-head strong { font-size:13.5px; }
+  .pane-head strong.pname { cursor:text; border-radius:6px; padding:1px 5px; }
+  .pane-head strong.pname:hover { background:rgba(255,255,255,.07); }
+  .pane-head code { max-width:170px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+  .msgs { flex:1; min-height:0; overflow:auto; padding:14px; display:flex; flex-direction:column; gap:10px; }
+  .empty { color:var(--weak); text-align:center; margin-top:32px; line-height:1.7; }
+  .empty .big { font-size:26px; }
+  .msg { border:1px solid var(--border-soft); border-radius:var(--radius); padding:10px 12px; max-width:100%;
+    white-space:pre-wrap; word-break:break-word; line-height:1.55; animation:pop .18s ease-out; }
+  @keyframes pop { from { opacity:0; transform:translateY(4px);} to { opacity:1; transform:none;} }
+  .msg.user { background:rgba(250,178,131,.09); border-color:rgba(250,178,131,.28); }
+  .msg.assistant { background:var(--panel2); }
+  .msg .role { font-size:11px; color:var(--muted); margin-bottom:6px; display:flex; gap:6px; align-items:center;
+    text-transform:uppercase; letter-spacing:.6px; }
+  .msg .tool { font-family:ui-monospace,Consolas,monospace; font-size:12px; color:var(--info); }
+  .msg details { margin-top:6px; color:var(--muted); }
+  .pane-input { display:flex; gap:8px; padding:10px 12px; border-top:1px solid var(--border-soft); background:var(--panel); }
+  .pane-input textarea { flex:1; min-height:46px; padding:9px 11px; border-radius:10px; border:1px solid var(--border);
+    background:var(--input); color:var(--text); resize:vertical; outline:none; }
+  footer { padding:8px 14px; border-top:1px solid var(--border-soft); font-size:12px; color:var(--muted);
+    display:flex; gap:14px; flex-wrap:wrap; background:rgba(17,17,19,.7); }
+  footer code { color:var(--text); }
+  #taskbar { display:flex; gap:8px; align-items:center; padding:0 14px 10px; flex-wrap:wrap; }
+  #taskbar .hint { font-size:12px; color:var(--weak); }
+  .taskbtn.min { opacity:.55; }
+  .taskbtn.active { border-color:rgba(250,178,131,.6); }
+  @media (max-width:900px){
+    main#desktop { display:block; overflow:auto; background:none; border:none; }
+    .window { position:relative !important; left:auto !important; top:auto !important;
+      width:auto !important; height:440px !important; margin:0 0 12px; resize:none; }
+  }
+</style>
+</head>
+<body>
+<header>
+  <span class="brand"><span class="logo"></span>OpenCode Parallel</span>
+  <span class="pill"><span id="statusDot"></span><span id="statusText">not connected</span></span>
+  <input id="baseUrl" size="24" value="http://localhost:4097" title="opencode serve URL" />
+  <input id="username" size="9" value="opencode" title="basic-auth username" />
+  <input id="password" size="12" value="parallel-local-01" title="OPENCODE_SERVER_PASSWORD" />
+  <label class="demo"><input type="checkbox" id="demoMode" checked /> demo mode</label>
+  <button id="btnConnect">Connect</button>
+  <button id="btnList">Sessions</button>
+  <span style="flex:1"></span>
+  <span class="pill">🏆 Chosen: <b id="chosenLabel">none</b></span>
+</header>
+<div id="banner"></div>
+<div id="fanout">
+  <textarea id="fanText" placeholder="Ask both sessions at once — e.g. solve the same task two ways, then pick a winner below  (Ctrl+Enter to send)"></textarea>
+  <div style="display:flex;flex-direction:column;gap:6px">
+    <button id="btnBoth">Send to both ⏎</button>
+    <button id="btnRefreshBoth">Refresh both</button>
+    <span class="hint">Ctrl+Enter = both</span>
+  </div>
+</div>
+<div id="mergetools">
+  <button id="btnMerge">⤺ Combine L+R → Merge session</button>
+  <button id="btnRefreshAll">Refresh all</button>
+  <button id="btnTile">▦ Tile</button>
+  <button id="btnCascade">▨ Cascade</button>
+  <button id="btnResetLayout">Reset layout</button>
+  <span class="hint">Drag to edges/corners to snap (halves, quarters, maximize) · drag near a window to dock beside it · double-click an edge handle to fill free space · double-click header to maximize.</span>
+</div>
+<main id="desktop">
+  <div id="snapPreview"><span id="snapLabel"></span></div>
+  <section class="pane window" id="pane-left">
+    <div class="pane-head">
+      <span class="avatar left">◐</span>
+      <strong class="pname" id="name-left" data-pane="left" title="Double-click to rename">Left</strong>
+      <button class="winbtn" data-name="left" title="Rename session">✎</button>
+      <code id="sid-left">(no session)</code>
+      <span class="win-spacer"></span>
+      <button class="winbtn" data-win="min" data-w="pane-left" title="Minimize">—</button>
+      <button class="winbtn" data-win="max" data-w="pane-left" title="Maximize">▢</button>
+    </div>
+    <div class="pane-head">
+      <button data-act="new" data-pane="left">+ New</button>
+      <button data-act="attach" data-pane="left">Attach</button>
+      <button data-act="refresh" data-pane="left">Refresh</button>
+      <button data-act="abort" data-pane="left">Abort</button>
+      <button data-act="choose" data-pane="left">🏆 Winner</button>
+      <button data-act="export" data-pane="left">Export</button>
+    </div>
+    <div class="msgs" id="msgs-left"></div>
+    <div class="pane-input">
+      <textarea id="in-left" placeholder="Message left session…"></textarea>
+      <button data-act="send" data-pane="left">Send</button>
+    </div>
+  </section>
+  <section class="pane window" id="pane-right">
+    <div class="pane-head">
+      <span class="avatar right">◑</span>
+      <strong class="pname" id="name-right" data-pane="right" title="Double-click to rename">Right</strong>
+      <button class="winbtn" data-name="right" title="Rename session">✎</button>
+      <code id="sid-right">(no session)</code>
+      <span class="win-spacer"></span>
+      <button class="winbtn" data-win="min" data-w="pane-right" title="Minimize">—</button>
+      <button class="winbtn" data-win="max" data-w="pane-right" title="Maximize">▢</button>
+    </div>
+    <div class="pane-head">
+      <button data-act="new" data-pane="right">+ New</button>
+      <button data-act="attach" data-pane="right">Attach</button>
+      <button data-act="refresh" data-pane="right">Refresh</button>
+      <button data-act="abort" data-pane="right">Abort</button>
+      <button data-act="choose" data-pane="right">🏆 Winner</button>
+      <button data-act="export" data-pane="right">Export</button>
+    </div>
+    <div class="msgs" id="msgs-right"></div>
+    <div class="pane-input">
+      <textarea id="in-right" placeholder="Message right session…"></textarea>
+      <button data-act="send" data-pane="right">Send</button>
+    </div>
+  </section>
+  <section class="pane window" id="pane-merge">
+    <div class="pane-head">
+      <span class="avatar merge">⤺</span>
+      <strong class="pname" id="name-merge" data-pane="merge" title="Double-click to rename">Merge</strong>
+      <button class="winbtn" data-name="merge" title="Rename session">✎</button>
+      <code id="sid-merge">(no session)</code>
+      <span class="win-spacer"></span>
+      <button class="winbtn" data-win="min" data-w="pane-merge" title="Minimize">—</button>
+      <button class="winbtn" data-win="max" data-w="pane-merge" title="Maximize">▢</button>
+    </div>
+    <div class="pane-head">
+      <button data-act="new" data-pane="merge">+ New</button>
+      <button data-act="attach" data-pane="merge">Attach</button>
+      <button data-act="refresh" data-pane="merge">Refresh</button>
+      <button data-act="abort" data-pane="merge">Abort</button>
+      <button data-act="export" data-pane="merge">Export</button>
+    </div>
+    <div class="msgs" id="msgs-merge"></div>
+    <div class="pane-input">
+      <textarea id="in-merge" placeholder="Message merge session, or use Combine above…"></textarea>
+      <button data-act="send" data-pane="merge">Send</button>
+    </div>
+  </section>
+  <aside id="inspector" class="window">
+    <div class="pane-head">
+      <span class="avatar merge">◈</span>
+      <strong>Inspector</strong>
+      <span class="win-spacer"></span>
+      <button class="winbtn" data-win="min" data-w="inspector" title="Minimize">—</button>
+      <button class="winbtn" data-win="max" data-w="inspector" title="Maximize">▢</button>
+    </div>
+    <div class="insp-body">
+    <h3>Session inspector</h3>
+    <div class="note">Compact view of what exists per pane. Token/cost stats like your screenshot live in the TUI context panel — the server API only exposes sessions + messages, so this shows counts, last activity and what needs attention. Use Export per pane for raw messages.</div>
+    <div id="insp-list"></div>
+    </div>
+  </aside>
+</main>
+<div id="taskbar">
+  <span class="hint">Windows:</span>
+  <button class="taskbtn" data-w="pane-left">◐ Left</button>
+  <button class="taskbtn" data-w="pane-right">◑ Right</button>
+  <button class="taskbtn" data-w="pane-merge">⤺ Merge</button>
+  <button class="taskbtn" data-w="inspector">◈ Inspector</button>
+</div>
+<footer>
+  <span>Backend live at <code>http://localhost:4097</code> (user <code>opencode</code>, localhost-only password prefilled) — uncheck demo mode → Connect → + New.</span>
+  <span>Docs: <code>{server}/doc</code> · API: <code>GET /global/health</code>, <code>GET/POST /session</code>, <code>GET/POST /session/:id/message</code>, <code>POST /session/:id/abort</code></span>
+</footer>
+<script>
+const $ = id => document.getElementById(id);
+const PANES = ['left','right','merge'];
+let savedNames={}; try{ savedNames=JSON.parse(localStorage.getItem('oc-parallel-names-v1')||'{}'); }catch(e){}
+const state = {
+  left:{sessionID:null,messages:[],lastError:null,lastSync:null},
+  right:{sessionID:null,messages:[],lastError:null,lastSync:null},
+  merge:{sessionID:null,messages:[],lastError:null,lastSync:null},
+  chosen:null, names:savedNames||{}
+};
+function base(){ return $('baseUrl').value.replace(/\/$/,''); }
+function authHeader(){
+  const u=$('username').value, p=$('password').value;
+  if(!p) return {};
+  return { 'Authorization':'Basic '+btoa(unescape(encodeURIComponent(u+':'+p))) };
+}
+const sleep=ms=>new Promise(r=>setTimeout(r,ms));
+async function api(path, opts={}){
+  const headers={ ...authHeader(), ...(opts.headers||{}) };
+  if(opts.body!==undefined) headers['Content-Type']='application/json';
+  const res = await fetch(base()+path, { ...opts, headers });
+  if(!res.ok){ const t=await res.text().catch(()=> ''); throw new Error(res.status+' '+res.statusText+' '+t.slice(0,300)); }
+  const ct=res.headers.get('content-type')||'';
+  return ct.includes('json') ? res.json() : res.text();
+}
+function setStatus(ok,msg){ $('statusDot').style.background=ok?'#22c55e':'#ef4444'; $('statusText').textContent=msg; }
+function banner(msg){ const b=$('banner'); if(!msg){b.style.display='none';return;} b.style.display='block'; b.textContent=msg; }
+function esc(s){ return (s??'').toString().replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;'); }
+
+// ---- inspector (compact session panel) ----
+function msgTextOf(m){
+  const parts=(m.parts||[]);
+  return parts.filter(p=>p.text).map(p=>typeof p.text==='string'?p.text:JSON.stringify(p.text)).join('\n');
+}
+function countRoles(pane){
+  let u=0,a=0;
+  for(const m of (state[pane].messages||[])){
+    const r=String((m.info||m).role||(m.info||m).type||'').toLowerCase();
+    if(r.includes('user'))u++;else a++;
+  }
+  return {u,a,total:(state[pane].messages||[]).length};
+}
+function lastAssistantText(pane){
+  const msgs=state[pane].messages||[];
+  for(let i=msgs.length-1;i>=0;i--){
+    const r=String((msgs[i].info||msgs[i]).role||(msgs[i].info||msgs[i]).type||'').toLowerCase();
+    if(!r.includes('user')){ const t=msgTextOf(msgs[i]).trim(); if(t)return t; }
+  }
+  return '';
+}
+function setPaneError(pane,msg){ state[pane].lastError=String(msg||'').slice(0,300); updateInspector(); }
+function setPaneOk(pane){ state[pane].lastError=null; state[pane].lastSync=new Date().toLocaleTimeString(); updateInspector(); }
+function needFor(pane){
+  if($('demoMode')&&$('demoMode').checked) return 'demo only — uncheck demo + Connect for live';
+  if(!state[pane].sessionID) return 'need: + New or Attach a session';
+  if(state[pane].lastError) return 'need: fix error above, then Refresh';
+  if(!(state[pane].messages||[]).length) return 'need: send a message';
+  return 'ready';
+}
+function updateInspector(){
+  const box=$('insp-list'); if(!box) return;
+  box.innerHTML=PANES.map(p=>{
+    const c=countRoles(p);
+    const sid=state[p].sessionID||'(none)';
+    const err=state[p].lastError?'<div class="row"><span>Last error</span></div><div class="err">'+esc(state[p].lastError)+'</div>':'<div class="row"><span>Status</span><b class="ok">ok</b></div>';
+    return '<div class="insp-card"><h4>'+esc(paneName(p))+' <span style="opacity:.6">('+esc(p)+')</span> · <code>'+esc(sid.length>26?sid.slice(0,26)+'…':sid)+'</code></h4>'
+      +'<div class="row"><span>Messages</span><b>'+c.total+' ('+c.u+' user / '+c.a+' asst)</b></div>'
+      +'<div class="row"><span>Last sync</span><b>'+esc(state[p].lastSync||'—')+'</b></div>'
+      +err
+      +'<div class="row"><span>Needs</span><b>'+esc(needFor(p))+'</b></div></div>';
+  }).join('');
+}
+function doExport(pane){
+  const data={pane,sessionID:state[pane].sessionID,exportedAt:new Date().toISOString(),messages:state[pane].messages||[]};
+  if(!data.messages.length && !data.sessionID){ banner('Export ('+pane+'): nothing to export yet.'); return; }
+  const blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'});
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(blob);
+  a.download='session-'+pane+'-'+(state[pane].sessionID||'none')+'.json';
+  a.click(); setTimeout(()=>URL.revokeObjectURL(a.href),2000);
+}
+async function doMerge(){
+  const a=lastAssistantText('left'), b=lastAssistantText('right');
+  if(!a && !b){ banner('Merge: nothing to combine yet — send a prompt to Left/Right first (fan-out).'); return; }
+  if($('demoMode').checked){
+    if(!state.merge.sessionID){ state.merge.sessionID='demo-merge'; $('sid-merge').textContent='demo-merge'; }
+    demoEcho('merge','COMBINED (demo):\n— Left: '+(a||'(empty)').slice(0,500)+'\n— Right: '+(b||'(empty)').slice(0,500));
+    updateInspector(); return;
+  }
+  if(!state.merge.sessionID){ await doNew('merge'); if(!state.merge.sessionID) return; }
+  const prompt='Combine the two proposals below into one final answer. Keep the best of each, note conflicts explicitly.\n\n--- PROPOSAL A (left session) ---\n'+(a||'(empty)')+'\n\n--- PROPOSAL B (right session) ---\n'+(b||'(empty)');
+  await doSend('merge',prompt);
+}
+
+// ---- render ----
+function renderMessages(pane, items){
+  const box = $('msgs-'+pane);
+  state[pane].messages=Array.isArray(items)?items:[];
+  setPaneOk(pane);
+  box.innerHTML='';
+  if(!items || !items.length){ box.innerHTML='<div class="empty"><div class="big">✦</div>No messages yet.<br/>Type below or use the top bar to ask both.</div>'; return; }
+  for(const m of items){
+    const info=m.info||m, parts=m.parts||[];
+    const rawRole=String(info.role||info.type||'message').toLowerCase();
+    const isUser=rawRole.includes('user');
+    const div=document.createElement('div');
+    div.className='msg '+(isUser?'user':'assistant');
+    let html='<div class="role">'+(isUser?'● you':'✦ opencode')+' · '+esc(info.messageID||info.id||'')+'</div>';
+    for(const p of parts){
+      if(p.type==='text'&&p.text) html+='<div>'+esc(p.text)+'</div>';
+      else if(p.type==='reasoning'&&p.text) html+='<details><summary>reasoning</summary><div>'+esc(p.text)+'</div></details>';
+      else if(p.type && String(p.type).startsWith('tool')) html+='<div class="tool">🔧 '+esc(p.type)+' '+esc(p.tool||p.name||'')+'</div>';
+      else if(p.text) html+='<div>'+esc(typeof p.text==='string'?p.text:JSON.stringify(p.text))+'</div>';
+    }
+    if(!parts.length && (info.text||info.content)) html+='<div>'+esc(info.text||info.content)+'</div>';
+    div.innerHTML=html;
+    box.appendChild(div);
+  }
+  box.scrollTop=box.scrollHeight;
+}
+function demoEcho(pane, text){
+  const box=$('msgs-'+pane);
+  const empty=box.querySelector('.empty'); if(empty) box.innerHTML='';
+  const mk=(role,t)=>{const d=document.createElement('div');d.className='msg '+role;d.innerHTML='<div class="role">'+(role==='user'?'● you':'✦ opencode')+' (demo)</div><div>'+esc(t)+'</div>';box.appendChild(d);};
+  mk('user',text); setTimeout(()=>{mk('assistant','Demo reply on '+pane+'. Uncheck demo mode + Connect to use real opencode serve.');box.scrollTop=box.scrollHeight;},300);
+  state[pane].messages=[{info:{role:'user'},parts:[{type:'text',text}]},{info:{role:'assistant'},parts:[{type:'text',text:'Demo reply on '+pane+'. Uncheck demo mode + Connect to use real opencode serve.'}]}];
+  setPaneOk(pane);
+  box.scrollTop=box.scrollHeight;
+}
+
+// ---- actions ----
+async function doConnect(){
+  if($('demoMode').checked){ setStatus(true,'demo mode — layout works, no server needed'); banner('Demo mode ON: panes echo locally. To go live: start opencode serve with --cors, uncheck demo, Connect.'); return; }
+  try{ const h=await api('/global/health'); setStatus(true,'connected '+(h.version||'')); banner(''); }
+  catch(e){ setStatus(false,'connect failed'); banner("Connect failed: "+e.message+". Start: $env:OPENCODE_SERVER_PASSWORD='parallel-local-01'; opencode serve --port 4097 --cors http://localhost:8000 (open DevTools console for CORS errors)."); }
+}
+async function doList(){
+  if($('demoMode').checked){ banner('Demo mode: List disabled. Uncheck demo + Connect first.'); return; }
+  try{
+    const s=await api('/session');
+    console.log('sessions',s);
+    const ids=(Array.isArray(s)?s:[]).map(x=>x.id||x.sessionID||x.ID).filter(Boolean);
+    banner('Sessions ('+ids.length+'): '+ids.slice(0,10).join(', ')+(ids.length>10?' …':'')+' — use Attach on a pane and paste an id to reuse it. Full list in console.');
+  }
+  catch(e){ banner('List failed: '+e.message); }
+}
+function doAttach(pane){
+  const cur=state[pane].sessionID||'';
+  const id=(prompt('Attach '+pane+' pane to session id:',cur)||'').trim();
+  if(!id) return;
+  state[pane].sessionID=id; state[pane].lastError=null; $('sid-'+pane).textContent=id; updateInspector(); doRefresh(pane);
+}
+async function doNew(pane){
+  if($('demoMode').checked){ state[pane].sessionID='demo-'+pane; state[pane].messages=[]; $('sid-'+pane).textContent='demo-'+pane; $('msgs-'+pane).innerHTML='<div class="empty"><div class="big">✦</div>Demo session ready.<br/>Type below and Send.</div>'; updateInspector(); return; }
+  try{
+    const s=await api('/session',{method:'POST',body:JSON.stringify({title:'parallel-'+pane+' '+new Date().toLocaleTimeString()})});
+    state[pane].sessionID=s.id||s.sessionID||s.ID; $('sid-'+pane).textContent=state[pane].sessionID||'(unknown)';
+    setPaneOk(pane);
+    await doRefresh(pane);
+  }catch(e){ setPaneError(pane,e.message); banner('Create session failed ('+pane+'): '+e.message); }
+}
+async function doRefresh(pane){
+  const id=state[pane].sessionID;
+  if($('demoMode').checked || !id) return;
+  try{ const msgs=await api('/session/'+encodeURIComponent(id)+'/message?limit=100'); renderMessages(pane,msgs); }
+  catch(e){ setPaneError(pane,e.message); banner('Refresh failed ('+pane+'): '+e.message); }
+}
+async function doSend(pane, text){
+  text=(text??$('in-'+pane).value).trim();
+  if(!text) return;
+  if($('demoMode').checked){ demoEcho(pane,text); $('in-'+pane).value=''; return; }
+  let id=state[pane].sessionID;
+  if(!id){ await doNew(pane); id=state[pane].sessionID; if(!id) return; }
+  $('in-'+pane).value='';
+  try{
+    // primary: blocking message (waits for reply).
+    // fallback: prompt_async + poll, for timeouts/disconnects — NOT for 404 (missing session would 404 on both).
+    try{
+      await api('/session/'+encodeURIComponent(id)+'/message',{method:'POST',body:JSON.stringify({parts:[{type:'text',text}]})});
+    }catch(err){
+      const m=String(err.message||'');
+      const isMissing=/\b404\b/.test(m);
+      const isTransient=/Failed to fetch|timeout|aborted|502|503|504/i.test(m);
+      if(!isMissing && isTransient){
+        await api('/session/'+encodeURIComponent(id)+'/prompt_async',{method:'POST',body:JSON.stringify({parts:[{type:'text',text}]})});
+        for(let i=0;i<5;i++){ await sleep(2000); await doRefresh(pane); }
+        return;
+      }
+      throw err;
+    }
+    await doRefresh(pane);
+  }catch(e){ setPaneError(pane,e.message); banner('Send failed ('+pane+'): '+e.message+' — message kept below.'); $('in-'+pane).value=text; }
+}
+async function doAbort(pane){
+  if($('demoMode').checked) return;
+  const id=state[pane].sessionID; if(!id) return;
+  try{ await api('/session/'+encodeURIComponent(id)+'/abort',{method:'POST'}); setPaneOk(pane); banner('Abort sent ('+pane+').'); await doRefresh(pane); }
+  catch(e){ setPaneError(pane,e.message); banner('Abort failed ('+pane+'): '+e.message); }
+}
+function doChoose(pane){
+  document.querySelectorAll('.pane').forEach(el=>el.classList.remove('chosen'));
+  $('pane-'+pane).classList.add('chosen');
+  state.chosen=pane; $('chosenLabel').textContent=paneName(pane)+' '+(state[pane].sessionID||'');
+}
+
+// ---- floating multitask window manager ----
+const WIN_IDS=['pane-left','pane-right','pane-merge','inspector'];
+const LS_KEY='oc-parallel-layout-v1';
+let zTop=10;
+function desktop(){ return $('desktop'); }
+function focusWin(id){
+  const el=$(id); if(!el) return;
+  zTop++; el.style.zIndex=zTop;
+  document.querySelectorAll('.window').forEach(w=>w.classList.remove('focused'));
+  el.classList.remove('minimized'); el.classList.add('focused');
+  document.querySelectorAll('.taskbtn').forEach(b=>{
+    b.classList.toggle('active',b.dataset.w===id&&!$(id).classList.contains('minimized'));
+    b.classList.toggle('min',$(b.dataset.w)&&$(b.dataset.w).classList.contains('minimized'));
+  });
+  saveLayout();
+}
+function saveLayout(){
+  try{
+    const d=desktop().getBoundingClientRect(); const o={};
+    for(const id of WIN_IDS){ const el=$(id); if(!el) continue;
+      o[id]={l:el.offsetLeft/d.width,t:el.offsetTop/d.height,w:el.offsetWidth/d.width,h:el.offsetHeight/d.height,min:el.classList.contains('minimized')?1:0};
+    }
+    localStorage.setItem(LS_KEY,JSON.stringify(o));
+  }catch(e){}
+}
+function applyRect(id,r){
+  const el=$(id), d=desktop(); if(!el||!d) return;
+  const W=d.clientWidth,H=d.clientHeight;
+  el.style.left=Math.max(0,Math.round(r.l*W))+'px';
+  el.style.top=Math.max(0,Math.round(r.t*H))+'px';
+  el.style.width=Math.max(300,Math.round(r.w*W))+'px';
+  el.style.height=Math.max(260,Math.round(r.h*H))+'px';
+  el.classList.toggle('minimized',!!r.min);
+}
+function defaultLayout(){
+  return {
+    'pane-left':{l:.008,t:.02,w:.318,h:.96,min:0},
+    'pane-right':{l:.338,t:.02,w:.318,h:.96,min:0},
+    'pane-merge':{l:.668,t:.02,w:.20,h:.96,min:0},
+    'inspector':{l:.872,t:.02,w:.12,h:.96,min:0}
+  };
+}
+function tileWindows(){
+  const d=desktop(); if(!d) return;
+  const W=d.clientWidth,H=d.clientHeight;
+  const vis=WIN_IDS.filter(id=>!$(id).classList.contains('minimized'));
+  const list=vis.length?vis:WIN_IDS.slice(0,3);
+  list.forEach(id=>$(id).classList.remove('minimized'));
+  const n=list.length, gap=8;
+  const w=(W-gap*(n+1))/n;
+  list.forEach((id,i)=>{
+    const el=$(id);
+    el.classList.remove('maximized');
+    el.style.left=(gap+i*(w+gap))+'px'; el.style.top='8px';
+    el.style.width=w+'px'; el.style.height=(H-16)+'px';
+    focusWin(id);
+  });
+  saveLayout();
+}
+function cascadeWindows(){
+  const d=desktop(); if(!d) return;
+  WIN_IDS.forEach(id=>{$(id).classList.remove('minimized','maximized');});
+  const W=d.clientWidth,H=d.clientHeight;
+  const w=Math.min(560,W*.62), h=Math.min(560,H*.78);
+  WIN_IDS.forEach((id,i)=>{
+    const el=$(id);
+    el.style.width=w+'px'; el.style.height=h+'px';
+    el.style.left=(12+i*44)+'px'; el.style.top=(10+i*38)+'px';
+    focusWin(id);
+  });
+  saveLayout();
+}
+function initWindows(){
+  const d=desktop(); if(!d) return;
+  let saved=null;
+  try{ saved=JSON.parse(localStorage.getItem(LS_KEY)||'null'); }catch(e){}
+  const layout=(saved&&WIN_IDS.every(id=>saved[id]))?saved:defaultLayout();
+  // first paint: tile for sane sizes, then apply saved fractions
+  requestAnimationFrame(()=>{
+    if(saved&&WIN_IDS.every(id=>saved[id])){ WIN_IDS.forEach(id=>applyRect(id,saved[id])); }
+    else tileWindows();
+    focusWin('pane-left');
+    document.querySelectorAll('.taskbtn').forEach(b=>{
+      b.classList.toggle('min',$(b.dataset.w)&&$(b.dataset.w).classList.contains('minimized'));
+    });
+  });
+  // drag via header (smooth rAF + multitask snap: halves, quarters, dock-to-window)
+  const snapEl=$('snapPreview'), snapLabel=$('snapLabel');
+  const MAG=14; // magnetic dock threshold px
+  function deskSnap(clientX,clientY){
+    const d=desktop(), r=d.getBoundingClientRect();
+    const x=clientX-r.left, y=clientY-r.top, W=d.clientWidth, H=d.clientHeight;
+    const corner=56, edge=24, m=4;
+    const hw=W/2-m-2, hh=H/2-m-2;
+    const nearL=x<=corner, nearR=x>=W-corner, nearT=y<=corner, nearB=y>=H-corner;
+    if(nearT&&nearL) return {l:m,t:m,w:hw,h:hh,kind:'q',label:'Snap · top-left quarter'};
+    if(nearT&&nearR) return {l:W/2+2,t:m,w:hw,h:hh,kind:'q',label:'Snap · top-right quarter'};
+    if(nearB&&nearL) return {l:m,t:H/2+2,w:hw,h:hh,kind:'q',label:'Snap · bottom-left quarter'};
+    if(nearB&&nearR) return {l:W/2+2,t:H/2+2,w:hw,h:hh,kind:'q',label:'Snap · bottom-right quarter'};
+    if(y<=10) return {l:m,t:m,w:W-8,h:H-8,kind:'max',label:'Snap · maximize'};
+    if(x<=edge) return {l:m,t:m,w:hw,h:H-8,kind:'half',label:'Snap · left half'};
+    if(x>=W-edge) return {l:W/2+2,t:m,w:hw,h:H-8,kind:'half',label:'Snap · right half'};
+    if(y>=H-14) return {l:m,t:H/2+2,w:W-8,h:hh,kind:'half',label:'Snap · bottom half'};
+    return null;
+  }
+  // dock beside a neighboring window to fill the free space next to it (keeps dragged size)
+  function neighborSnap(win,tx,ty){
+    const w=win.offsetWidth, h=win.offsetHeight;
+    let nx=tx, ny=ty, snapped=false;
+    for(const id of WIN_IDS){
+      if(id===win.id) continue;
+      const o=$(id); if(!o||o.classList.contains('minimized')) continue;
+      const ol=o.offsetLeft, ot=o.offsetTop, ow=o.offsetWidth, oh=o.offsetHeight;
+      const vOverlap=ty<ot+oh-40 && ty+h>ot+40;
+      const hOverlap=tx<ol+ow-40 && tx+w>ol+40;
+      if(vOverlap){
+        if(Math.abs(tx-(ol+ow))<MAG){ nx=ol+ow+4; snapped=true; }
+        else if(Math.abs((tx+w)-ol)<MAG){ nx=ol-w-4; snapped=true; }
+      }
+      if(hOverlap){
+        if(Math.abs(ty-(ot+oh))<MAG){ ny=ot+oh+4; snapped=true; }
+        else if(Math.abs((ty+h)-ot)<MAG){ ny=ot-h-4; snapped=true; }
+      }
+    }
+    if(!snapped) return null;
+    const d=desktop();
+    nx=Math.min(Math.max(0,nx),d.clientWidth-80);
+    ny=Math.min(Math.max(0,ny),d.clientHeight-40);
+    return {l:nx,t:ny,w,h,kind:'dock',label:'Snap · dock to window'};
+  }
+  function showSnap(s){
+    if(!s){ snapEl.style.display='none'; return; }
+    snapEl.style.display='block';
+    snapEl.style.left=s.l+'px'; snapEl.style.top=s.t+'px';
+    snapEl.style.width=s.w+'px'; snapEl.style.height=s.h+'px';
+    if(snapLabel) snapLabel.textContent=s.label||'';
+  }
+  // double-click an edge handle: grow that edge to fill free space (desktop edge or nearest window)
+  function fillFree(win,dir){
+    const d=desktop(); if(!d) return;
+    win.classList.remove('maximized'); focusWin(win.id);
+    const sl=win.offsetLeft, st=win.offsetTop, sw=win.offsetWidth, sh=win.offsetHeight;
+    if(dir.includes('e')){
+      let edge=d.clientWidth-4;
+      for(const id of WIN_IDS){ if(id===win.id) continue;
+        const o=$(id); if(!o||o.classList.contains('minimized')) continue;
+        const ot=o.offsetTop, oh=o.offsetHeight, ol=o.offsetLeft;
+        if(st<ot+oh-20 && st+sh>ot+20 && ol>sl+sw-8 && ol-4<edge) edge=ol-4;
+      }
+      win.style.width=Math.max(300,edge-sl)+'px';
+    }
+    if(dir.includes('w')){
+      let edge=4;
+      for(const id of WIN_IDS){ if(id===win.id) continue;
+        const o=$(id); if(!o||o.classList.contains('minimized')) continue;
+        const ot=o.offsetTop, oh=o.offsetHeight, or=o.offsetLeft+o.offsetWidth;
+        if(st<ot+oh-20 && st+sh>ot+20 && or<sl+sw-300 && or+4>edge) edge=or+4;
+      }
+      const nw=Math.max(300,sl+sw-edge);
+      win.style.left=(sl+sw-nw)+'px'; win.style.width=nw+'px';
+    }
+    if(dir.includes('s')){
+      let edge=d.clientHeight-4;
+      for(const id of WIN_IDS){ if(id===win.id) continue;
+        const o=$(id); if(!o||o.classList.contains('minimized')) continue;
+        const ol=o.offsetLeft, ow=o.offsetWidth, ot=o.offsetTop;
+        if(sl<ol+ow-20 && sl+sw>ol+20 && ot>st+sh-8 && ot-4<edge) edge=ot-4;
+      }
+      win.style.height=Math.max(260,edge-st)+'px';
+    }
+    if(dir.includes('n')){
+      let edge=4;
+      for(const id of WIN_IDS){ if(id===win.id) continue;
+        const o=$(id); if(!o||o.classList.contains('minimized')) continue;
+        const ol=o.offsetLeft, ow=o.offsetWidth, ob=o.offsetTop+o.offsetHeight;
+        if(sl<ol+ow-20 && sl+sw>ol+20 && ob<st+sh-260 && ob+4>edge) edge=ob+4;
+      }
+      const nh=Math.max(260,st+sh-edge);
+      win.style.top=(st+sh-nh)+'px'; win.style.height=nh+'px';
+    }
+    saveLayout();
+  }
+  document.querySelectorAll('.window').forEach(win=>{
+    // custom 8-way resize handles (smooth, all edges — replaces clunky native corner)
+    ['n','s','e','w','ne','nw','se','sw'].forEach(dir=>{
+      const h=document.createElement('div');
+      h.className='rh rh-'+dir; h.dataset.dir=dir;
+      h.title='Drag to resize · double-click to fill free space';
+      win.appendChild(h);
+      h.addEventListener('dblclick',e=>{ e.stopPropagation(); fillFree(win,dir); });
+      h.addEventListener('pointerdown',e=>{
+        e.preventDefault(); e.stopPropagation();
+        focusWin(win.id);
+        win.classList.add('resizing'); win.classList.remove('maximized');
+        const sx=e.clientX, sy=e.clientY;
+        const sl=win.offsetLeft, st=win.offsetTop, sw=win.offsetWidth, sh=win.offsetHeight;
+        h.setPointerCapture&&h.setPointerCapture(e.pointerId);
+        let raf=0, nx=sl, ny=st, nw=sw, nh=sh;
+        const apply=()=>{ raf=0;
+          win.style.left=nx+'px'; win.style.top=ny+'px';
+          win.style.width=nw+'px'; win.style.height=nh+'px';
+        };
+        const move=ev=>{
+          const dx=ev.clientX-sx, dy=ev.clientY-sy;
+          nx=sl; ny=st; nw=sw; nh=sh;
+          if(dir.includes('e')) nw=Math.max(300,sw+dx);
+          if(dir.includes('s')) nh=Math.max(260,sh+dy);
+          if(dir.includes('w')){ nw=Math.max(300,sw-dx); nx=sl+sw-nw; }
+          if(dir.includes('n')){ nh=Math.max(260,sh-dy); ny=st+sh-nh; }
+          if(!raf) raf=requestAnimationFrame(apply);
+        };
+        const up=()=>{ h.removeEventListener('pointermove',move); h.removeEventListener('pointerup',up);
+          if(raf) cancelAnimationFrame(raf);
+          win.style.left=nx+'px'; win.style.top=ny+'px'; win.style.width=nw+'px'; win.style.height=nh+'px';
+          win.classList.remove('resizing'); saveLayout(); };
+        h.addEventListener('pointermove',move); h.addEventListener('pointerup',up);
+      });
+    });
+    const heads=win.querySelectorAll('.pane-head');
+    heads.forEach(head=>{
+      head.addEventListener('pointerdown',e=>{
+        if(e.target.closest('button,textarea,input,code,a,summary,.pname')) return;
+        if(win.classList.contains('maximized')) return;
+        focusWin(win.id);
+        const d=desktop(), dr=d.getBoundingClientRect();
+        const ox=e.clientX-win.offsetLeft-dr.left, oy=e.clientY-win.offsetTop-dr.top;
+        win.classList.add('dragging');
+        head.setPointerCapture&&head.setPointerCapture(e.pointerId);
+        let raf=0, tx=win.offsetLeft, ty=win.offsetTop, snap=null;
+        const apply=()=>{ raf=0; win.style.left=tx+'px'; win.style.top=ty+'px'; };
+        const move=ev=>{
+          tx=Math.min(Math.max(0,ev.clientX-dr.left-ox),d.clientWidth-80);
+          ty=Math.min(Math.max(0,ev.clientY-dr.top-oy),d.clientHeight-40);
+          snap=deskSnap(ev.clientX,ev.clientY)||neighborSnap(win,tx,ty); showSnap(snap);
+          if(!raf) raf=requestAnimationFrame(apply);
+        };
+        const up=ev=>{
+          head.removeEventListener('pointermove',move); head.removeEventListener('pointerup',up);
+          if(raf) cancelAnimationFrame(raf);
+          win.classList.remove('dragging');
+          snapEl.style.display='none';
+          snap=snap||deskSnap(ev.clientX,ev.clientY)||neighborSnap(win,tx,ty);
+          if(snap){ win.classList.remove('maximized');
+            if(snap.kind==='max') toggleMax(win.id,true);
+            else { win.style.left=snap.l+'px'; win.style.top=snap.t+'px'; win.style.width=snap.w+'px'; win.style.height=snap.h+'px'; }
+          }else{ win.style.left=tx+'px'; win.style.top=ty+'px'; }
+          saveLayout();
+        };
+        head.addEventListener('pointermove',move); head.addEventListener('pointerup',up);
+      });
+      head.addEventListener('dblclick',e=>{
+        if(e.target.closest('button,textarea,input,code,.pname')) return;
+        toggleMax(win.id);
+      });
+    });
+    win.addEventListener('pointerdown',()=>focusWin(win.id),true);
+  });
+  document.querySelectorAll('[data-win]').forEach(b=>b.onclick=e=>{
+    e.stopPropagation();
+    const id=b.dataset.w;
+    if(b.dataset.win==='min'){ $(id).classList.add('minimized'); saveLayout(); syncTaskbar(); }
+    else toggleMax(id);
+  });
+  document.querySelectorAll('.taskbtn').forEach(b=>b.onclick=()=>{
+    const el=$(b.dataset.w);
+    if(el.classList.contains('minimized')){ el.classList.remove('minimized'); focusWin(b.dataset.w); }
+    else if(el.classList.contains('focused')){ el.classList.add('minimized'); saveLayout(); }
+    else focusWin(b.dataset.w);
+    syncTaskbar();
+  });
+  new ResizeObserver(()=>{/* sizes persist on demand */}).observe(d);
+  window.addEventListener('resize',()=>saveLayout());
+  $('btnTile').onclick=tileWindows;
+  $('btnCascade').onclick=cascadeWindows;
+  $('btnResetLayout').onclick=()=>{ localStorage.removeItem(LS_KEY); WIN_IDS.forEach(id=>$(id).classList.remove('minimized','maximized')); tileWindows(); };
+}
+function toggleMax(id,force){
+  const el=$(id), d=desktop(); if(!el||!d) return;
+  focusWin(id);
+  if(el.classList.contains('maximized')&&!force){
+    el.classList.remove('maximized');
+    try{ const s=JSON.parse(localStorage.getItem(LS_KEY)||'null'); if(s&&s[id]) applyRect(id,s[id]); }catch(e){}
+  }else{
+    el.dataset.prev=JSON.stringify({l:el.style.left,t:el.style.top,w:el.style.width,h:el.style.height});
+    el.classList.add('maximized');
+    el.style.left='4px'; el.style.top='4px';
+    el.style.width=(d.clientWidth-8)+'px'; el.style.height=(d.clientHeight-8)+'px';
+  }
+}
+// ---- renameable session names ----
+const NAMES_KEY='oc-parallel-names-v1';
+function paneName(p){ return (state.names&&state.names[p])||p[0].toUpperCase()+p.slice(1); }
+function applyNames(){
+  for(const p of PANES){
+    const n=paneName(p);
+    const h=$('name-'+p); if(h) h.textContent=n;
+    const tb=document.querySelector('.taskbtn[data-w="pane-'+p+'"]');
+    if(tb) tb.textContent=(p==='left'?'◐ ':p==='right'?'◑ ':'⤺ ')+n;
+  }
+  if(state.chosen) $('chosenLabel').textContent=paneName(state.chosen)+' '+(state[state.chosen].sessionID||'');
+  updateInspector();
+}
+function renamePane(p){
+  const cur=paneName(p);
+  const n=(prompt('Rename '+cur+' session:',cur)||'').trim().slice(0,24);
+  if(!n) return;
+  state.names=state.names||{}; state.names[p]=n;
+  try{ localStorage.setItem(NAMES_KEY,JSON.stringify(state.names)); }catch(e){}
+  applyNames();
+}
+function syncTaskbar(){
+  document.querySelectorAll('.taskbtn').forEach(b=>{
+    const el=$(b.dataset.w); if(!el) return;
+    b.classList.toggle('min',el.classList.contains('minimized'));
+    b.classList.toggle('active',el.classList.contains('focused')&&!el.classList.contains('minimized'));
+  });
+}
+
+// wire
+$('btnConnect').onclick=doConnect;
+$('btnList').onclick=doList;
+$('btnBoth').onclick=async()=>{ const t=$('fanText').value.trim(); if(!t) return; $('fanText').value=''; await Promise.all([doSend('left',t),doSend('right',t)]); };
+$('btnRefreshBoth').onclick=()=>{ doRefresh('left'); doRefresh('right'); };
+$('btnMerge').onclick=doMerge;
+$('btnRefreshAll').onclick=()=>{ doRefresh('left'); doRefresh('right'); doRefresh('merge'); };
+$('fanText').addEventListener('keydown',e=>{ if((e.ctrlKey||e.metaKey)&&e.key==='Enter'){ e.preventDefault(); $('btnBoth').click(); } });
+$('in-left').addEventListener('keydown',e=>{ if((e.ctrlKey||e.metaKey)&&e.key==='Enter'){ e.preventDefault(); doSend('left'); } });
+$('in-right').addEventListener('keydown',e=>{ if((e.ctrlKey||e.metaKey)&&e.key==='Enter'){ e.preventDefault(); doSend('right'); } });
+$('in-merge').addEventListener('keydown',e=>{ if((e.ctrlKey||e.metaKey)&&e.key==='Enter'){ e.preventDefault(); doSend('merge'); } });
+document.querySelectorAll('button[data-act]').forEach(b=>b.onclick=()=>{
+  const pane=b.dataset.pane, act=b.dataset.act;
+  if(act==='new')doNew(pane); if(act==='attach')doAttach(pane); if(act==='refresh')doRefresh(pane);
+  if(act==='abort')doAbort(pane); if(act==='send')doSend(pane); if(act==='choose')doChoose(pane);
+  if(act==='export')doExport(pane);
+});
+document.querySelectorAll('[data-name]').forEach(b=>b.onclick=e=>{ e.stopPropagation(); renamePane(b.dataset.name); });
+document.querySelectorAll('.pname').forEach(h=>h.addEventListener('dblclick',e=>{ e.stopPropagation(); renamePane(h.dataset.pane); }));
+setStatus(true,'demo mode — press Connect');
+applyNames();
+initWindows();
+banner('Demo mode ON: side-by-side layout works now. For live parallel chats, follow the 3 footer steps.');
+</script>
+</body>
+</html>
