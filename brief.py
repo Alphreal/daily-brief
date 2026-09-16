@@ -233,7 +233,7 @@ h1{{font-size:26px;margin:8px 0}}h2{{font-size:19px;margin:0 0 8px}}
 </head>
 <body>
 <div class="wrap max-w-3xl mx-auto px-4">
-<div class="topbar"><a href="index.html">&larr; All briefs</a><span class="muted">Daily Brief &middot; static, no login</span></div>
+<div class="topbar"><a href="index.html">&larr; Alph</a><span class="muted">Daily Brief</span></div>
 {body_inner}
 </div>
 </body>
