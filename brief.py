@@ -20,6 +20,7 @@ import html
 import json
 import os
 import re
+import shutil
 import subprocess
 import urllib.parse
 import urllib.request
@@ -113,6 +114,14 @@ def verdict_for_repo(repo, desc):
         return "Hype check - interesting code, don't trust money claims; backtest yourself."
     return "Skim first - star spike may be demo-driven; check last commit + issues."
 
+DAILY_BOTTOM = "Bottom line: headlines are hints, not conclusions. For AI: use agents for research, keep payments/keys manual. For science: mice/single papers need replication. For space: dates matter more than photos."
+MONDAY_BOTTOM = "Bottom line: weekly gain = interest, not audit. Before install: license, last commit date, open issues, tests. Star spikes on demos fade; painkillers (browser sharing, diagrams, science skills) stick."
+
+def tldr_picks(feeds):
+    """First item of each feed = top pick (skip failed feeds). Shared by md + html."""
+    return [(n, items[0]) for n, items in feeds.items()
+            if items and not items[0][0].startswith("RSS failed")][:3]
+
 def fetch_rss_titles(url, limit=5):
     try:
         xml_text = fetch_text(url)
@@ -170,7 +179,7 @@ def render_monday_md(date_str, weekly, new_hot):
         L.append(f"- {h['repo']} ({h.get('stars')} stars) - {h['desc']}")
         L.append(f"  Verdict: {verdict_for_repo(h['repo'], h['desc'])} - {h['url']}")
     L.append("")
-    L.append("Bottom line: weekly gain = interest, not audit. Before install: license, last commit date, open issues, tests. Star spikes on demos fade; painkillers (browser sharing, diagrams, science skills) stick.")
+    L.append(MONDAY_BOTTOM)
     return "\n".join(L)
 
 def render_daily_md(date_str, feeds):
@@ -179,11 +188,7 @@ def render_daily_md(date_str, feeds):
     L.append("")
     # TL;DR: first item of each feed = top pick
     L.append("## TL;DR - 3 to read first")
-    picks = []
-    for name, items in feeds.items():
-        if items and not items[0][0].startswith("RSS failed"):
-            picks.append((name, items[0]))
-    for name, (t, l, s, p) in picks[:3]:
+    for name, (t, l, s, p) in tldr_picks(feeds):
         L.append(f"- [{name}] {t}")
         if s:
             L.append(f"  In short: {s}")
@@ -201,7 +206,7 @@ def render_daily_md(date_str, feeds):
                 L.append(f"  {takeaway_for(t, '')}")
             L.append(f"  Link: {l}")
         L.append("")
-    L.append("Bottom line: headlines are hints, not conclusions. For AI: use agents for research, keep payments/keys manual. For science: mice/single papers need replication. For space: dates matter more than photos.")
+    L.append(DAILY_BOTTOM)
     return "\n".join(L)
 
 def esc(s):
@@ -240,12 +245,8 @@ h1{{font-size:26px;margin:8px 0}}h2{{font-size:19px;margin:0 0 8px}}
 </html>"""
 
 def render_daily_html(date_str, feeds):
-    picks = []
-    for name, items in feeds.items():
-        if items and not items[0][0].startswith("RSS failed"):
-            picks.append((name, items[0]))
     tldr = ['<div class="tldr"><h2>TL;DR &mdash; 3 to read first</h2>']
-    for name, (t, l, s, p) in picks[:3]:
+    for name, (t, l, s, p) in tldr_picks(feeds):
         tldr.append(f'<div class="card"><span class="badge">{esc(name)}</span>'
                     f'<a href="{esc(l)}"><b>{esc(t)}</b></a>'
                     + (f'<div class="muted">{esc(s)}</div>' if s else '') + '</div>')
@@ -263,7 +264,7 @@ def render_daily_html(date_str, feeds):
                         + (f' <span class="muted">({esc(p)})</span>' if p else '')
                         + f'<br>{inner}<br><a href="{esc(l)}">{esc(l)}</a></div>')
         secs.append('</div></div>')
-    secs.append('<div class="card muted">Bottom line: headlines are hints, not conclusions. For AI: use agents for research, keep payments/keys manual. For science: mice/single papers need replication. For space: dates matter more than photos.</div>')
+    secs.append(f'<div class="card muted">{esc(DAILY_BOTTOM)}</div>')
     return html_shell(f"Coffee brief - {date_str}", "\n".join(secs))
 
 def render_monday_html(date_str, weekly, new_hot):
@@ -295,7 +296,7 @@ def render_monday_html(date_str, weekly, new_hot):
                     f'<div class="muted">{esc(h["desc"])}</div>'
                     f'<div class="muted">Verdict: {esc(verdict_for_repo(h["repo"], h["desc"]))}</div></div>')
     secs.append('</div>')
-    secs.append('<div class="card muted">Bottom line: weekly gain = interest, not audit. Before install: license, last commit date, open issues, tests. Star spikes on demos fade; painkillers (browser sharing, diagrams, science skills) stick.</div>')
+    secs.append(f'<div class="card muted">{esc(MONDAY_BOTTOM)}</div>')
     return html_shell(f"Monday Trending - {date_str}", "\n".join(secs))
 
 def render_index_html(entries):
@@ -325,7 +326,6 @@ def list_html_entries(scan_dir):
 def export_docs(html_files):
     """Copy only *.html to docs/ for GitHub Pages. Never token/credentials."""
     os.makedirs(DOCS_DIR, exist_ok=True)
-    import shutil
     for src in html_files:
         if src.endswith(".html"):
             shutil.copy(src, os.path.join(DOCS_DIR, os.path.basename(src)))
@@ -441,28 +441,21 @@ def main():
         f.write(md)
     print(f"Saved: {path}")
 
-    html_files = []
     if html_doc:
         hpath = os.path.join(OUT_DIR, f"brief-{date_str}-{mode}.html")
         with open(hpath, "w", encoding="utf-8") as f:
             f.write(html_doc)
         print(f"Saved: {hpath}")
-        html_files.append(hpath)
-        # rebuild index in OUT_DIR (lists every brief-*.html present there)
+        # rebuild index in OUT_DIR (entries already includes hpath)
         entries = list_html_entries(OUT_DIR)
         ipath = os.path.join(OUT_DIR, "index.html")
         with open(ipath, "w", encoding="utf-8") as f:
             f.write(render_index_html(entries))
         print(f"Saved: {ipath}")
-        html_files.append(ipath)
         # docs/ export for GitHub Pages (html only, never token/credentials):
         # copy every brief-*.html so docs/index never links to a missing file,
         # then rebuild docs/index.html from what is actually in docs/.
-        seen = list(dict.fromkeys(html_files))
-        for fn, _, _ in entries:
-            p = os.path.join(OUT_DIR, fn)
-            if p not in seen:
-                seen.append(p)
+        seen = [os.path.join(OUT_DIR, fn) for fn, _, _ in entries] + [ipath]
         export_docs(seen)
         docs_entries = list_html_entries(DOCS_DIR)
         with open(os.path.join(DOCS_DIR, "index.html"), "w", encoding="utf-8") as f:
