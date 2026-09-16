@@ -300,8 +300,7 @@ def render_monday_html(date_str, weekly, new_hot):
 
 def render_index_html(entries):
     # entries: list of (filename, label, date_str) sorted desc
-    rows = ['<h1>Daily Brief &mdash; all issues</h1>',
-            "<div class='muted'>Static site. Same content as .md + Gmail. Open any issue, no login.</div>",
+    rows = ['<h1>NEWS</h1>',
             '<div class="tldr"><b>Latest</b> &mdash; start here, then browse below.</div>']
     for fn, label, ds in entries:
         rows.append(f'<div class="card"><a href="{esc(fn)}"><b>{esc(label)}</b></a> '
