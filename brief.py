@@ -11,7 +11,8 @@ Usage:
   python brief.py --mode auto --email tung19628@gmail.com
   python brief.py --mode monday --email tung19628@gmail.com --no-draft
   python brief.py --mode daily --email tung19628@gmail.com
-Output: ./out/brief-YYYY-MM-DD.md
+Output: OUT_DIR/brief-YYYY-MM-DD-(daily|monday).md + .html, index.html, docs/ copy for Pages
+Flags: --no-draft (skip Gmail), --no-html (skip HTML)
 """
 import argparse
 import datetime
@@ -26,6 +27,7 @@ import xml.etree.ElementTree as ET
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 # NOTE: Default Project folder is not creatable via PowerShell here, so write output to Temp (writable).
 OUT_DIR = r"C:\Users\ADMIN\AppData\Local\Temp\opencode\brief-out"
+DOCS_DIR = os.path.join(BASE_DIR, "docs")
 HEADERS = {"User-Agent": "brief-bot/1.0 (+local scheduler)"}
 
 def fetch_text(url, timeout=20):
@@ -201,6 +203,133 @@ def render_daily_md(date_str, feeds):
     L.append("Bottom line: headlines are hints, not conclusions. For AI: use agents for research, keep payments/keys manual. For science: mice/single papers need replication. For space: dates matter more than photos.")
     return "\n".join(L)
 
+def esc(s):
+    return html.escape(s or "", quote=True)
+
+def html_shell(title, body_inner):
+    return f"""<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{esc(title)}</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<style>
+body{{background:#f7f7f5;color:#1a1a1a;font-family:ui-sans-serif,system-ui,-apple-system,Segoe UI,Roboto,sans-serif;margin:0}}
+.wrap{{max-width:880px;margin:0 auto;padding:24px 16px 64px}}
+.topbar{{display:flex;justify-content:space-between;align-items:center;margin-bottom:16px}}
+.topbar a{{color:#555;text-decoration:none;font-size:14px}}
+.card{{background:#fff;border:1px solid #e7e5e4;border-radius:12px;padding:16px;margin:12px 0}}
+.tldr{{background:#fff;border:1px solid #e7e5e4;border-left:4px solid #1a1a1a;border-radius:12px;padding:16px;margin:16px 0}}
+.badge{{display:inline-block;background:#f1f0ee;border-radius:999px;padding:2px 10px;font-size:12px;margin-right:6px}}
+.muted{{color:#6b7280;font-size:13px}}
+.grid2{{display:grid;grid-template-columns:1fr;gap:0}}
+@media(min-width:720px){{.grid2{{grid-template-columns:1fr 1fr;gap:12px}}.grid2 .card{{margin:0}}}}
+.sec{{margin-top:28px}}
+a{{color:#0f62fe}}
+h1{{font-size:26px;margin:8px 0}}h2{{font-size:19px;margin:0 0 8px}}
+</style>
+</head>
+<body>
+<div class="wrap max-w-3xl mx-auto px-4">
+<div class="topbar"><a href="index.html">&larr; All briefs</a><span class="muted">Daily Brief &middot; static, no login</span></div>
+{body_inner}
+</div>
+</body>
+</html>"""
+
+def render_daily_html(date_str, feeds):
+    picks = []
+    for name, items in feeds.items():
+        if items and not items[0][0].startswith("RSS failed"):
+            picks.append((name, items[0]))
+    tldr = ['<div class="tldr"><h2>TL;DR &mdash; 3 to read first</h2>']
+    for name, (t, l, s, p) in picks[:3]:
+        tldr.append(f'<div class="card"><span class="badge">{esc(name)}</span>'
+                    f'<a href="{esc(l)}"><b>{esc(t)}</b></a>'
+                    + (f'<div class="muted">{esc(s)}</div>' if s else '') + '</div>')
+    tldr.append('</div>')
+    secs = [f"<h1>Coffee brief &mdash; AI / Tech / Science &mdash; {esc(date_str)} (10 min)</h1>",
+            "<div class='muted'>Same content as .md + Gmail draft.</div>"] + tldr
+    for name, items in feeds.items():
+        secs.append(f'<div class="sec"><h2>{esc(name)}</h2><div class="grid2">')
+        for t, l, s, p in items:
+            if s:
+                inner = f'<div class="muted">{esc(s)}</div><div class="muted">{esc(takeaway_for(t, s))}</div>'
+            else:
+                inner = f'<div class="muted">Discussion thread, no summary &mdash; skim comments.</div><div class="muted">{esc(takeaway_for(t, ""))}</div>'
+            secs.append(f'<div class="card"><a href="{esc(l)}"><b>{esc(t)}</b></a>'
+                        + (f' <span class="muted">({esc(p)})</span>' if p else '')
+                        + f'<br>{inner}<br><a href="{esc(l)}">{esc(l)}</a></div>')
+        secs.append('</div></div>')
+    secs.append('<div class="card muted">Bottom line: headlines are hints, not conclusions. For AI: use agents for research, keep payments/keys manual. For science: mice/single papers need replication. For space: dates matter more than photos.</div>')
+    return html_shell(f"Coffee brief - {date_str}", "\n".join(secs))
+
+def render_monday_html(date_str, weekly, new_hot):
+    tldr = ['<div class="tldr"><h2>TL;DR &mdash; my take</h2>']
+    if weekly:
+        for i, r in enumerate(weekly[:3], 1):
+            tldr.append(f'<div class="card"><span class="badge">#{i} {esc(r["repo"])}</span> '
+                        f'<span class="badge">{esc(r["gained"])}</span>'
+                        f'<div class="muted">{esc(verdict_for_repo(r["repo"], r["desc"]))}</div></div>')
+    else:
+        for h in new_hot[:3]:
+            tldr.append(f'<div class="card"><b>{esc(h["repo"])}</b><div class="muted">{esc(verdict_for_repo(h["repo"], h["desc"]))}</div></div>')
+    tldr.append('</div>')
+    secs = [f"<h1>Monday GitHub Trending &mdash; weekly gain &mdash; {esc(date_str)}</h1>",
+            "<div class='muted'>Top 10 by stars GAINED last week. Read the verdict, not just the stars. "
+            "<a href='https://github.com/trending?since=weekly'>Verify live</a></div>"] + tldr
+    secs.append('<div class="sec"><h2>Top 10 weekly gain</h2><div class="grid2">')
+    for i, r in enumerate(weekly, 1):
+        secs.append(f'<div class="card"><span class="badge">#{i}</span>'
+                    f'<a href="{esc(r["url"])}"><b>{esc(r["repo"])}</b></a> '
+                    f'<span class="badge">{esc(r["gained"])} / {esc(r["total"])} total</span>'
+                    f'<div class="muted">{esc(r["desc"])}</div>'
+                    f'<div class="muted">Verdict: {esc(verdict_for_repo(r["repo"], r["desc"]))}</div></div>')
+    secs.append('</div></div>')
+    secs.append('<div class="sec"><h2>New hot (created last 14 days)</h2>')
+    for h in new_hot:
+        secs.append(f'<div class="card"><a href="{esc(h["url"])}"><b>{esc(h["repo"])}</b></a> '
+                    f'<span class="badge">{esc(str(h.get("stars")))} stars</span>'
+                    f'<div class="muted">{esc(h["desc"])}</div>'
+                    f'<div class="muted">Verdict: {esc(verdict_for_repo(h["repo"], h["desc"]))}</div></div>')
+    secs.append('</div>')
+    secs.append('<div class="card muted">Bottom line: weekly gain = interest, not audit. Before install: license, last commit date, open issues, tests. Star spikes on demos fade; painkillers (browser sharing, diagrams, science skills) stick.</div>')
+    return html_shell(f"Monday Trending - {date_str}", "\n".join(secs))
+
+def render_index_html(entries):
+    # entries: list of (filename, label, date_str) sorted desc
+    rows = ['<h1>Daily Brief &mdash; all issues</h1>',
+            "<div class='muted'>Static site. Same content as .md + Gmail. Open any issue, no login.</div>",
+            '<div class="tldr"><b>Latest</b> &mdash; start here, then browse below.</div>']
+    for fn, label, ds in entries:
+        rows.append(f'<div class="card"><a href="{esc(fn)}"><b>{esc(label)}</b></a> '
+                    f'<span class="badge">{esc(ds)}</span></div>')
+    if not entries:
+        rows.append('<div class="card muted">No issues yet &mdash; run: python brief.py --mode daily</div>')
+    return html_shell("Daily Brief - index", "\n".join(rows))
+
+def list_html_entries(scan_dir):
+    out = []
+    try:
+        for fn in sorted(os.listdir(scan_dir), reverse=True):
+            if fn.startswith("brief-") and fn.endswith(".html") and fn != "index.html":
+                # brief-YYYY-MM-DD-mode.html
+                m = re.match(r"brief-(\d{4}-\d{2}-\d{2})-(daily|monday)\.html", fn)
+                if m:
+                    out.append((fn, f"Brief {m.group(1)} ({m.group(2)})", m.group(1)))
+    except FileNotFoundError:
+        pass
+    return out
+
+def export_docs(html_files):
+    """Copy only *.html to docs/ for GitHub Pages. Never token/credentials."""
+    os.makedirs(DOCS_DIR, exist_ok=True)
+    import shutil
+    for src in html_files:
+        if src.endswith(".html"):
+            shutil.copy(src, os.path.join(DOCS_DIR, os.path.basename(src)))
+
 def try_gmail_draft(subject, body_text, to_email):
     """Best-effort Gmail draft. Requires google-api-python-client + credentials.json. Returns (ok, msg)."""
     try:
@@ -250,6 +379,7 @@ def main():
     ap.add_argument("--mode", choices=["auto", "monday", "daily"], default="auto")
     ap.add_argument("--email", default="tung19628@gmail.com")
     ap.add_argument("--no-draft", action="store_true", help="skip Gmail, just save file")
+    ap.add_argument("--no-html", action="store_true", help="skip HTML, md only")
     args = ap.parse_args()
 
     os.makedirs(OUT_DIR, exist_ok=True)
@@ -258,20 +388,54 @@ def main():
     if mode == "auto":
         mode = "monday" if today.weekday() == 0 else "daily"
 
-    date_str = today.isoformat()
+    if mode == "monday":
+        # Monday brief is weekly: always date it to the most recent Monday,
+        # even when generated on another day (e.g. Wed 09-16 -> Mon 09-14).
+        date_str = (today - datetime.timedelta(days=today.weekday())).isoformat()
+    else:
+        date_str = today.isoformat()
     if mode == "monday":
         weekly, new_hot = monday_github_trending()
         md = render_monday_md(date_str, weekly, new_hot)
+        html_doc = None if args.no_html else render_monday_html(date_str, weekly, new_hot)
         subject = f"[Monday 9am VN] GitHub Trending Top 10 weekly gain - {date_str}"
     else:
         feeds = daily_brief()
         md = render_daily_md(date_str, feeds)
+        html_doc = None if args.no_html else render_daily_html(date_str, feeds)
         subject = f"[9am VN] AI/Tech/Science coffee brief - {date_str}"
 
     path = os.path.join(OUT_DIR, f"brief-{date_str}-{mode}.md")
     with open(path, "w", encoding="utf-8") as f:
         f.write(md)
     print(f"Saved: {path}")
+
+    html_files = []
+    if html_doc:
+        hpath = os.path.join(OUT_DIR, f"brief-{date_str}-{mode}.html")
+        with open(hpath, "w", encoding="utf-8") as f:
+            f.write(html_doc)
+        print(f"Saved: {hpath}")
+        html_files.append(hpath)
+        # rebuild index in OUT_DIR (lists every brief-*.html present there)
+        entries = list_html_entries(OUT_DIR)
+        ipath = os.path.join(OUT_DIR, "index.html")
+        with open(ipath, "w", encoding="utf-8") as f:
+            f.write(render_index_html(entries))
+        print(f"Saved: {ipath}")
+        html_files.append(ipath)
+        # docs/ export for GitHub Pages (html only, never token/credentials):
+        # copy every brief-*.html so docs/index never links to a missing file,
+        # then rebuild docs/index.html from what is actually in docs/.
+        for fn, _, _ in entries:
+            html_files.append(os.path.join(OUT_DIR, fn))
+        export_docs(html_files)
+        docs_entries = list_html_entries(DOCS_DIR)
+        with open(os.path.join(DOCS_DIR, "index.html"), "w", encoding="utf-8") as f:
+            f.write(render_index_html(docs_entries))
+        print(f"Exported to docs/: {sorted(os.path.basename(p) for p in html_files)}")
+    else:
+        print("HTML skipped (--no-html).")
 
     if not args.no_draft:
         ok, msg = try_gmail_draft(subject, md, args.email)
