@@ -346,7 +346,7 @@ def auto_push_docs(date_str, mode, docs_files):
         r = run("git", "add", "--", *docs_files)
         if r.returncode != 0:
             return False, f"git add failed: {(r.stderr or r.stdout).strip()[:150]}"
-        st = run("git", "status", "--porcelain", "--", "docs")
+        st = run("git", "status", "--porcelain", "--", *docs_files)
         if not st.stdout.strip():
             return True, "docs/ unchanged, nothing to push."
         c = run("git", "commit", "-m", f"brief {date_str} ({mode}) auto-publish")
