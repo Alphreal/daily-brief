@@ -248,7 +248,7 @@ th{{background:#f7f7f5;font-weight:600}}
 .chapter h2{{margin-top:14px}}
 .toc a{{background:#fff;border:1px solid #e7e5e4;border-radius:999px;padding:4px 12px;font-size:13px;color:#1a1a1a;text-decoration:none}}
 @media(min-width:1100px){{.wrap{{max-width:1100px}}.grid2{{grid-template-columns:1fr 1fr 1fr}}}}
-@media print{{.topbar{{display:none}}.wrap{{max-width:100%;padding:0}}body{{background:#fff}}.card,.tldr{{break-inside:avoid}}}}
+@media print{{.topbar{{display:none}}.toc{{position:static;background:#fff}}.wrap{{max-width:100%;padding:0}}body{{background:#fff}}.card,.tldr{{break-inside:avoid}}}}
 </style>
 </head>
 <body>

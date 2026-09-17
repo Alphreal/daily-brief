@@ -67,7 +67,7 @@ def md_to_html(text):
                 i += 1
             out.append('<div class="tldr">' + "<br>".join(quotes) + "</div>")
             continue
-        elif ln.startswith("|"):
+        elif ln.strip().startswith("|"):
             tbl, hdr = ["<div class='card'><table>"], True
             while i < len(lines) and lines[i].strip().startswith("|"):
                 raw = [c.strip() for c in lines[i].strip().strip("|").split("|")]
@@ -96,7 +96,10 @@ def md_to_html(text):
             items = []
             while i < len(lines) and re.match(r"\d+\. ", lines[i].strip()):
                 txt = re.sub(r"^\d+\.\s*", "", lines[i].strip())
-                items.append(f"<li>{inline(txt)}</li>")
+                if txt.lower().startswith(("[graph", "[picture", "[qr", "[image")):
+                    items.append(f'<li class="placeholder">{inline(txt)}</li>')
+                else:
+                    items.append(f"<li>{inline(txt)}</li>")
                 i += 1
             out.append("<ol class='card'>" + "\n".join(items) + "</ol>")
             continue
@@ -107,27 +110,28 @@ def md_to_html(text):
             else:
                 out.append(f"<p>{inline(txt)}</p>")
         i += 1
-    body = group_sections(out)
+    hero, rest = group_sections(out)
     if toc:
         nav = '<div class="toc">' + "".join(
             f'<a href="#{brief.esc(sid)}">{brief.esc(t)}</a>' for sid, t in toc
         ) + "</div>"
-        return nav + "\n" + body, toc
-    return body, toc
+        return hero + nav + rest, toc
+    return hero + rest, toc
 
 
 def group_sections(blocks):
     """Cover blocks -> hero card; each h2 + following blocks -> chapter card."""
     idx = [n for n, b in enumerate(blocks) if b.startswith("<h2")]
     if not idx:
-        return "\n".join(blocks)
-    parts = []
+        return "", "\n".join(blocks)
+    hero = ""
     if idx[0] > 0:
-        parts.append('<div class="hero card">\n' + "\n".join(blocks[:idx[0]]) + "\n</div>")
+        hero = '<div class="hero card">\n' + "\n".join(blocks[:idx[0]]) + "\n</div>\n"
+    rest = []
     for k, s in enumerate(idx):
         e = idx[k + 1] if k + 1 < len(idx) else len(blocks)
-        parts.append('<section class="chapter">\n' + "\n".join(blocks[s:e]) + "\n</section>")
-    return "\n".join(parts)
+        rest.append('<section class="chapter">\n' + "\n".join(blocks[s:e]) + "\n</section>")
+    return hero, "\n".join(rest)
 
 
 SHELL_TOPBAR = '<div class="topbar"><a href="index.html">&larr; Alph</a><span class="muted">Daily Brief</span></div>'
