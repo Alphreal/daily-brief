@@ -84,7 +84,11 @@ def md_to_html(text):
         elif ln.startswith("- "):
             items = []
             while i < len(lines) and lines[i].strip().startswith("- "):
-                items.append(f"<li>{inline(lines[i].strip()[2:])}</li>")
+                txt = lines[i].strip()[2:].strip()
+                if txt.lower().startswith(("[graph", "[picture", "[qr", "[image")):
+                    items.append(f'<li class="placeholder">{inline(txt)}</li>')
+                else:
+                    items.append(f"<li>{inline(txt)}</li>")
                 i += 1
             out.append("<ul class='card'>" + "\n".join(items) + "</ul>")
             continue
