@@ -91,7 +91,7 @@ def md_to_html(text):
             continue
         else:
             txt = ln.strip()
-            if txt.startswith("[Graph") or txt.startswith("[Picture"):
+            if txt.startswith(("[Graph", "[Picture", "[QR")):
                 out.append(f'<div class="placeholder">{inline(txt)}</div>')
             else:
                 out.append(f"<p>{inline(txt)}</p>")
