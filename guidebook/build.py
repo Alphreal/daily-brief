@@ -32,8 +32,12 @@ def inline(s):
     return s
 
 
+def slug(t):
+    return re.sub(r"[^a-z0-9]+", "-", t.lower()).strip("-")
+
+
 def md_to_html(text):
-    out, lines, i = [], text.split("\n"), 0
+    out, toc, lines, i = [], [], text.split("\n"), 0
     while i < len(lines):
         ln = lines[i].rstrip()
         if not ln.strip():
@@ -42,7 +46,9 @@ def md_to_html(text):
         if ln.startswith("### "):
             out.append(f"<h3>{inline(ln[4:])}</h3>")
         elif ln.startswith("## "):
-            out.append(f"<h2>{inline(ln[3:])}</h2>")
+            sid = slug(ln[3:]) or f"sec-{len(toc)}"
+            toc.append((sid, ln[3:].strip()))
+            out.append(f'<h2 id="{sid}">{inline(ln[3:])}</h2>')
         elif ln.startswith("# "):
             out.append(f"<h1>{inline(ln[2:])}</h1>")
         elif ln.strip() == "---":
@@ -84,9 +90,18 @@ def md_to_html(text):
             out.append("<ol class='card'>" + "\n".join(items) + "</ol>")
             continue
         else:
-            out.append(f"<p>{inline(ln.strip())}</p>")
+            txt = ln.strip()
+            if txt.startswith("[Graph") or txt.startswith("[Picture"):
+                out.append(f'<div class="placeholder">{inline(txt)}</div>')
+            else:
+                out.append(f"<p>{inline(txt)}</p>")
         i += 1
-    return "\n".join(out)
+    if toc:
+        nav = '<div class="toc">' + "".join(
+            f'<a href="#{brief.esc(sid)}">{brief.esc(t)}</a>' for sid, t in toc
+        ) + "</div>"
+        return nav + "\n" + "\n".join(out), toc
+    return "\n".join(out), toc
 
 
 SHELL_TOPBAR = '<div class="topbar"><a href="index.html">&larr; Alph</a><span class="muted">Daily Brief</span></div>'
@@ -104,7 +119,7 @@ def main():
     built = []
     for fn, label in DOCS:
         with open(os.path.join(GB_DIR, fn), encoding="utf-8") as f:
-            body = md_to_html(f.read())
+            body, _toc = md_to_html(f.read())
         nav = '<div class="topbar"><a href="index.html">&larr; Alph</a><span class="muted">Guidebook</span></div>'
         html = swap_topbar(brief.html_shell(label, body), nav)
         name = fn.replace(".md", ".html")

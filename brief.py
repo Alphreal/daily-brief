@@ -236,7 +236,15 @@ body{{background:#f7f7f5;color:#1a1a1a;font-family:ui-sans-serif,system-ui,-appl
 @media(min-width:720px){{.grid2{{grid-template-columns:1fr 1fr;gap:12px}}.grid2 .card{{margin:0}}}}
 .sec{{margin-top:28px}}
 a{{color:#0f62fe}}
-h1{{font-size:26px;margin:8px 0}}h2{{font-size:19px;margin:0 0 8px}}
+h1{{font-size:26px;margin:8px 0}}h2{{font-size:19px;margin:0 0 8px}}h3{{font-size:16px;margin:14px 0 6px}}
+table{{width:100%;border-collapse:collapse;font-size:14px}}
+th,td{{text-align:left;padding:8px 10px;border-bottom:1px solid #e7e5e4;vertical-align:top}}
+th{{background:#f7f7f5;font-weight:600}}
+.placeholder{{border:1.5px dashed #a8a29e;border-radius:12px;padding:14px 16px;margin:12px 0;background:#fafaf9;color:#57534e;font-size:14px}}
+.toc{{display:flex;flex-wrap:wrap;gap:8px;margin:12px 0 4px}}
+.toc a{{background:#fff;border:1px solid #e7e5e4;border-radius:999px;padding:4px 12px;font-size:13px;color:#1a1a1a;text-decoration:none}}
+@media(min-width:1100px){{.grid2{{grid-template-columns:1fr 1fr 1fr}}}}
+@media print{{.topbar,.toc{{display:none}}.wrap{{max-width:100%;padding:0}}body{{background:#fff}}.card,.tldr{{break-inside:avoid}}}}
 </style>
 </head>
 <body>
