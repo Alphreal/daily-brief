@@ -23,7 +23,11 @@ table{width:100%;border-collapse:collapse;font-size:14px}
 th,td{text-align:left;padding:8px 10px;border-bottom:1px solid #e7e5e4;vertical-align:top}
 th{background:#f7f7f5;font-weight:600}
 .placeholder{border:1.5px dashed #a8a29e;border-radius:12px;padding:14px 16px;margin:12px 0;background:#fafaf9;color:#57534e;font-size:14px}
-.toc{display:flex;flex-wrap:wrap;gap:8px;margin:12px 0 4px}
+.toc{display:flex;flex-wrap:wrap;gap:8px;margin:12px 0 4px;position:sticky;top:0;z-index:5;background:#f7f7f5;padding:8px 0}
+.hero{text-align:center}
+.hero h1{font-size:30px}
+.chapter{background:#fff;border:1px solid #e7e5e4;border-radius:14px;padding:4px 20px 16px;margin:20px 0}
+.chapter h2{margin-top:14px}
 .toc a{background:#fff;border:1px solid #e7e5e4;border-radius:999px;padding:4px 12px;font-size:13px;color:#1a1a1a;text-decoration:none}
 @media(min-width:1100px){.wrap{max-width:1100px}.grid2{grid-template-columns:1fr 1fr 1fr}}
 @media print{.topbar{display:none}.wrap{max-width:100%;padding:0}body{background:#fff}.card,.tldr{break-inside:avoid}}
@@ -33,12 +37,17 @@ th{background:#f7f7f5;font-weight:600}
 <div class="wrap mx-auto px-4">
 <div class="topbar"><a href="index.html">&larr; Alph</a><span class="muted">Guidebook</span></div>
 <div class="toc"><a href="#0-lesson-plan-15-minutes-per-lesson">0. Lesson Plan (15 minutes per lesson)</a><a href="#lesson-1-plan-your-study-group-1">Lesson 1 — Plan Your Study (Group 1)</a><a href="#lesson-2-remove-distraction-group-2">Lesson 2 — Remove Distraction (Group 2)</a><a href="#lesson-3-ask-for-help-early-group-3">Lesson 3 — Ask for Help Early (Group 3)</a><a href="#lesson-4-study-without-burning-out-group-4">Lesson 4 — Study Without Burning Out (Group 4)</a><a href="#norms-survey-distribution">Norms (survey + distribution)</a><a href="#closing-feedback-collection">Closing + Feedback Collection</a></div>
+<div class="hero card">
 <h1>Teacher-Use Textbook-Mix: 4 Lessons from the Class Guide</h1>
 <h3>For the facilitating teacher (Doc1 is the student handout)</h3>
+</div>
+<section class="chapter">
 <h2 id="0-lesson-plan-15-minutes-per-lesson">0. Lesson Plan (15 minutes per lesson)</h2>
 <p><b>Objectives:</b> students try one routine live and leave with a tonight-assignment.</p>
 <p><b>Materials:</b> printed Doc1 (1 per student) · survey form link + backup link · spreadsheet of results · Canva/class slides.</p>
 <p><b>Rhythm per lesson:</b> routine demo (3 min) → reason box (2 min) → activity (5 min) → mistake correction (3 min) → assignment (2 min).</p>
+</section>
+<section class="chapter">
 <h2 id="lesson-1-plan-your-study-group-1">Lesson 1 — Plan Your Study (Group 1)</h2>
 <ul class='card'><li><b>Student routine (Doc1 Ch1):</b> write a SMART goal for tonight + ALPEN plan for tomorrow.</li>
 <li><b>Reason box:</b> planned self-monitored study outperforms good intentions; recall beats re-reading.</li>
@@ -47,6 +56,8 @@ th{background:#f7f7f5;font-weight:600}
 <li><b>Mistake to correct:</b> &quot;Study LMS 2 hours&quot; → rewrite as task + time + score target.</li>
 <li>[Graph: class bar — % with vs without a written plan]</li>
 <li>[Picture demo: timer + checklist on projector]</li></ul>
+</section>
+<section class="chapter">
 <h2 id="lesson-2-remove-distraction-group-2">Lesson 2 — Remove Distraction (Group 2)</h2>
 <ul class='card'><li><b>Student routine (Doc1 Ch2):</b> phone in bag/drawer, 1 tab, notifications off — do it now, in class.</li>
 <li><b>Reason box:</b> nearby phones drain capacity untouched; multitaskers switch worse; residue lingers.</li>
@@ -55,6 +66,8 @@ th{background:#f7f7f5;font-weight:600}
 <li><b>Mistake to correct:</b> &quot;Face-down is fine&quot; → drawer/bag only; &quot;music with lyrics is fine&quot; → no-lyrics or silence.</li>
 <li>[Graph: class bar — self-reported focus with/without phone]</li>
 <li>[Picture demo: phone-out vs on-desk photo]</li></ul>
+</section>
+<section class="chapter">
 <h2 id="lesson-3-ask-for-help-early-group-3">Lesson 3 — Ask for Help Early (Group 3)</h2>
 <ul class='card'><li><b>Student routine (Doc1 Ch3):</b> the 15-minute question template + peer check + channel post.</li>
 <li><b>Reason box:</b> good questions get fast help; asking early shrinks online distance.</li>
@@ -63,6 +76,8 @@ th{background:#f7f7f5;font-weight:600}
 <li><b>Mistake to correct:</b> &quot;I&#x27;ll ask at the end of term&quot; → ask within the study session; &quot;DM a friend only&quot; → post publicly so all benefit.</li>
 <li>[Graph: class bar — help-seeking frequency]</li>
 <li>[Picture demo: good vs vague chat post]</li></ul>
+</section>
+<section class="chapter">
 <h2 id="lesson-4-study-without-burning-out-group-4">Lesson 4 — Study Without Burning Out (Group 4)</h2>
 <ul class='card'><li><b>Student routine (Doc1 Ch4):</b> 50-10 rhythm, 20-20-20, meeting pre-check.</li>
 <li><b>Reason box:</b> back-to-back video overloads; tech stress grows when tools surprise you; sleep/light/breaks protect focus.</li>
@@ -71,14 +86,19 @@ th{background:#f7f7f5;font-weight:600}
 <li><b>Mistake to correct:</b> &quot;3-hour marathon before deadline&quot; → split into 50-10 blocks across days.</li>
 <li>[Graph: class bar — fatigue level by study pattern]</li>
 <li>[Picture demo: stretch + screen-distance diagram]</li></ul>
+</section>
+<section class="chapter">
 <h2 id="norms-survey-distribution">Norms (survey + distribution)</h2>
 <ul class='card'><li>Lecturer/class-rep permission before posting any form link.</li>
 <li>Survey takes 5–7 minutes; 2 reminders maximum; backup link ready; test the link first.</li>
 <li>Voluntary + anonymous always; no names/IDs; report aggregates only.</li></ul>
+</section>
+<section class="chapter">
 <h2 id="closing-feedback-collection">Closing + Feedback Collection</h2>
 <ul class='card'><li>Week 2: share the one-page Class Guide table (Top 3–5 findings → routines).</li>
 <li>Collect feedback form (target 25): clarity / relevance / kept routine.</li>
 <li>Indicators of success: 40 valid Week-1 responses, 25 feedback responses, proof shared with class.</li></ul>
+</section>
 </div>
 </body>
 </html>

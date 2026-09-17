@@ -58,7 +58,8 @@ def md_to_html(text):
         elif ln.startswith("# "):
             out.append(f"<h1>{inline(ln[2:])}</h1>")
         elif ln.strip() == "---":
-            out.append("<hr>")
+            i += 1  # dropped: chapter cards give the separation now
+            continue
         elif ln.startswith("> "):
             quotes = []
             while i < len(lines) and lines[i].strip().startswith("> "):
@@ -102,12 +103,27 @@ def md_to_html(text):
             else:
                 out.append(f"<p>{inline(txt)}</p>")
         i += 1
+    body = group_sections(out)
     if toc:
         nav = '<div class="toc">' + "".join(
             f'<a href="#{brief.esc(sid)}">{brief.esc(t)}</a>' for sid, t in toc
         ) + "</div>"
-        return nav + "\n" + "\n".join(out), toc
-    return "\n".join(out), toc
+        return nav + "\n" + body, toc
+    return body, toc
+
+
+def group_sections(blocks):
+    """Cover blocks -> hero card; each h2 + following blocks -> chapter card."""
+    idx = [n for n, b in enumerate(blocks) if b.startswith("<h2")]
+    if not idx:
+        return "\n".join(blocks)
+    parts = []
+    if idx[0] > 0:
+        parts.append('<div class="hero card">\n' + "\n".join(blocks[:idx[0]]) + "\n</div>")
+    for k, s in enumerate(idx):
+        e = idx[k + 1] if k + 1 < len(idx) else len(blocks)
+        parts.append('<section class="chapter">\n' + "\n".join(blocks[s:e]) + "\n</section>")
+    return "\n".join(parts)
 
 
 SHELL_TOPBAR = '<div class="topbar"><a href="index.html">&larr; Alph</a><span class="muted">Daily Brief</span></div>'
