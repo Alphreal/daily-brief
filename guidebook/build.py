@@ -26,9 +26,9 @@ DOCS = [
 
 def inline(s):
     s = brief.esc(s)
+    s = re.sub(r"\[([^\]]+)\]\(([^)]+)\)", r'<a href="\2">\1</a>', s)
     s = re.sub(r"\*\*(.+?)\*\*", r"<b>\1</b>", s)
     s = re.sub(r"(?<!\*)\*([^*\n]+)\*(?!\*)", r"<i>\1</i>", s)
-    s = re.sub(r"\[([^\]]+)\]\(([^)]+)\)", r'<a href="\2">\1</a>', s)
     return s
 
 
@@ -37,7 +37,7 @@ def slug(t):
 
 
 def md_to_html(text):
-    out, toc, lines, i = [], [], text.split("\n"), 0
+    out, toc, seen, lines, i = [], [], set(), text.split("\n"), 0
     while i < len(lines):
         ln = lines[i].rstrip()
         if not ln.strip():
@@ -46,7 +46,13 @@ def md_to_html(text):
         if ln.startswith("### "):
             out.append(f"<h3>{inline(ln[4:])}</h3>")
         elif ln.startswith("## "):
-            sid = slug(ln[3:]) or f"sec-{len(toc)}"
+            sid = slug(ln[3:]) or "sec"
+            n = 1
+            base = sid
+            while sid in seen:
+                n += 1
+                sid = f"{base}-{n}"
+            seen.add(sid)
             toc.append((sid, ln[3:].strip()))
             out.append(f'<h2 id="{sid}">{inline(ln[3:])}</h2>')
         elif ln.startswith("# "):
@@ -91,7 +97,7 @@ def md_to_html(text):
             continue
         else:
             txt = ln.strip()
-            if txt.startswith(("[Graph", "[Picture", "[QR")):
+            if txt.lower().startswith(("[graph", "[picture", "[qr", "[image")):
                 out.append(f'<div class="placeholder">{inline(txt)}</div>')
             else:
                 out.append(f"<p>{inline(txt)}</p>")
