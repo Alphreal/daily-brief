@@ -317,7 +317,7 @@ def render_monday_html(date_str, weekly, new_hot):
     secs.append(f'<div class="card muted">{esc(MONDAY_BOTTOM)}</div>')
     return html_shell(f"Monday Trending - {date_str}", "\n".join(secs))
 
-def render_index_html(entries, base_dir=None):
+def render_index_html(entries):
     # entries: list of (filename, label, date_str) sorted desc
     rows = ['<h1>NEWS</h1>',
             '<div class="tldr"><b>Latest</b> &mdash; start here, then browse below.</div>']
@@ -326,9 +326,6 @@ def render_index_html(entries, base_dir=None):
                     f'<span class="badge">{esc(ds)}</span></div>')
     if not entries:
         rows.append('<div class="card muted">No issues yet &mdash; run: python brief.py --mode daily</div>')
-    if base_dir and os.path.exists(os.path.join(base_dir, "guidebook", "index.html")):
-        rows.append('<div class="card"><a href="guidebook/index.html"><b>Guidebook</b></a> '
-                    '<span class="badge">study guide</span></div>')
     return html_shell("Daily Brief - index", "\n".join(rows))
 
 def list_html_entries(scan_dir):
@@ -369,7 +366,7 @@ def auto_push_docs(date_str, mode, docs_files):
         st = run("git", "status", "--porcelain", "--", *docs_files)
         if not st.stdout.strip():
             return True, "docs/ unchanged, nothing to push."
-        c = run("git", "commit", "-m", f"brief {date_str} ({mode}) auto-publish")
+        c = run("git", "commit", "-m", f"brief {date_str} ({mode}) auto-publish", "--", *docs_files)
         if c.returncode != 0:
             return False, f"commit failed: {(c.stderr or c.stdout).strip()[:200]}"
         p = run("git", "push")
@@ -471,7 +468,7 @@ def main():
         entries = list_html_entries(OUT_DIR)
         ipath = os.path.join(OUT_DIR, "index.html")
         with open(ipath, "w", encoding="utf-8") as f:
-            f.write(render_index_html(entries, OUT_DIR))
+            f.write(render_index_html(entries))
         print(f"Saved: {ipath}")
         # docs/ export for GitHub Pages (html only, never token/credentials):
         # copy every brief-*.html so docs/index never links to a missing file,
@@ -480,7 +477,7 @@ def main():
         export_docs(seen)
         docs_entries = list_html_entries(DOCS_DIR)
         with open(os.path.join(DOCS_DIR, "index.html"), "w", encoding="utf-8") as f:
-            f.write(render_index_html(docs_entries, DOCS_DIR))
+            f.write(render_index_html(docs_entries))
         print(f"Exported to docs/: {sorted(os.path.basename(p) for p in seen)}")
         if not args.no_push:
             docs_rel = [os.path.join("docs", os.path.basename(p)) for p in seen]
