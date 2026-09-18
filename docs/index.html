@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Daily Brief - index</title>
 <script src="https://cdn.tailwindcss.com"></script>
+<link rel="stylesheet" href="assets/vendor/aos/aos.css">
 <style>
 body{background:#f7f7f5;color:#1a1a1a;font-family:ui-sans-serif,system-ui,-apple-system,Segoe UI,Roboto,sans-serif;margin:0}
 .wrap{max-width:880px;margin:0 auto;padding:24px 16px 64px}
@@ -30,7 +31,8 @@ th{background:#f7f7f5;font-weight:600}
 .chapter h2{margin-top:14px}
 .toc a{background:#fff;border:1px solid #e7e5e4;border-radius:999px;padding:4px 12px;font-size:13px;color:#1a1a1a;text-decoration:none}
 @media(min-width:1100px){.wrap{max-width:1100px}.grid2{grid-template-columns:1fr 1fr 1fr}}
-@media print{.topbar{display:none}.toc{position:static;background:#fff}.wrap{max-width:100%;padding:0}body{background:#fff}.card,.tldr{break-inside:avoid}}
+@media print{.topbar{display:none}.toc{position:static;background:#fff}.wrap{max-width:100%;padding:0}body{background:#fff}.card,.tldr{break-inside:avoid}[data-aos]{opacity:1!important;transform:none!important}}
+@media (prefers-reduced-motion:reduce){[data-aos]{opacity:1!important;transform:none!important;transition:none!important}}
 </style>
 </head>
 <body>
@@ -38,9 +40,14 @@ th{background:#f7f7f5;font-weight:600}
 <div class="topbar"><a href="index.html">&larr; Alph</a><span class="muted">Daily Brief</span></div>
 <h1>NEWS</h1>
 <div class="tldr"><b>Latest</b> &mdash; start here, then browse below.</div>
+<div class="card"><a href="brief-2026-09-18-daily.html"><b>Brief 2026-09-18 (daily)</b></a> <span class="badge">2026-09-18</span></div>
 <div class="card"><a href="brief-2026-09-17-daily.html"><b>Brief 2026-09-17 (daily)</b></a> <span class="badge">2026-09-17</span></div>
 <div class="card"><a href="brief-2026-09-16-daily.html"><b>Brief 2026-09-16 (daily)</b></a> <span class="badge">2026-09-16</span></div>
 <div class="card"><a href="brief-2026-09-14-monday.html"><b>Brief 2026-09-14 (monday)</b></a> <span class="badge">2026-09-14</span></div>
 </div>
+<script src="assets/vendor/aos/aos.js" defer></script>
+<script defer>
+document.addEventListener('DOMContentLoaded',function(){try{if(window.matchMedia&&matchMedia('(prefers-reduced-motion: reduce)').matches)return;if(!window.AOS)return;document.querySelectorAll('.card').forEach(function(el){if(!el.hasAttribute('data-aos'))el.setAttribute('data-aos','fade-up')});AOS.init({once:true,duration:300,offset:60});}catch(e){}});
+</script>
 </body>
 </html>
