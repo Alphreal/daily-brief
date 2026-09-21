@@ -6,6 +6,7 @@ token.json
 # Generated briefs / local output
 out/
 brief-out/
+*-silent.mp4
 
 # Logs / temp
 *.log
