@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="LN4 — fan-made tribute to Lando Norris, McLaren F1 driver. Countdown, helmets, galleries. Unofficial study recreation.">
+<meta name="theme-color" content="#F2EFE6">
+<title>LN4 — Lando Norris Fan Tribute | Flat Out Since 2019</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%23FF6A00'/%3E%3Ctext x='16' y='23' font-family='Arial Black' font-size='16' font-style='italic' fill='white' text-anchor='middle'%3E4%3C/text%3E%3C/svg%3E">
+<link rel="stylesheet" href="css/tokens.css">
+<link rel="stylesheet" href="css/layout.css?v=2">
+<link rel="stylesheet" href="css/components.css">
+</head>
+<body>
+<div class="progress" aria-hidden="true"><i id="prog"></i></div>
+<div class="loader" id="loader" aria-hidden="true"><canvas id="rive-load" width="240" height="240" style="width:130px;height:130px"></canvas><div class="load-num" id="load-num">00</div><div class="load-bar"><i id="load-bar"></i></div><p>Loading Norris</p></div>
+<header class="topbar">
+<div class="topbar-in">
+<a class="wordmark" href="#top" aria-label="LN4 home">LANDO<br>NORRIS</a>
+<span class="ln4">LN4</span>
+<div class="nav-actions">
+<a class="btn btn-lime" href="#store">Store</a>
+<button class="icon-btn" aria-label="Open menu" data-act="drawer" data-open="1">☰</button>
+</div>
+</div>
+</header>
+<div class="drawer" id="drawer" role="dialog" aria-label="Menu">
+<button class="icon-btn" style="align-self:flex-end;color:#fff" aria-label="Close" data-act="drawer" data-open="0">✕</button>
+<a class="big" href="#top">Home</a><a class="big" href="#ontrack">On Track</a><a class="big" href="#offtrack">Off Track</a><a class="big" href="#helmets">Helmets</a><a class="big" href="#store">Store</a>
+</div>
+
+<main id="top">
+<h1 style="position:absolute;left:-9999px">LN4 — Lando Norris fan tribute</h1>
+
+<section class="hero" aria-label="Hero">
+<div class="hero-kicker">McLaren F1 · Since 2019</div>
+<h2 class="hero-h">Lando<br><em>Norris</em></h2>
+<p class="hero-sub">Fearless. Flat out. The kid from karting who never lifted — now hunting wins in papaya.</p>
+<div class="cta-row" style="justify-content:flex-start"><a class="btn btn-dark" href="#ontrack">On track</a><a class="btn btn-line" href="#offtrack">Off track</a></div>
+<figure class="hero-photo rv"><img src="assets/hero.jpg" alt="Lando Norris driving the McLaren Formula 1 car" loading="eager"><figcaption>MCL38 · flat out — photo: Wikimedia Commons contributors (CC)</figcaption></figure>
+<canvas id="dust" aria-hidden="true"></canvas>
+<div class="speedlines" aria-hidden="true"></div>
+</section>
+
+<section class="nextrace" aria-label="Next race countdown" data-race="baku">
+<div><div class="hero-kicker" style="color:var(--lime)">Next race</div>
+<h3 style="font-family:var(--disp);font-size:28px;text-transform:uppercase"><span id="race-gp">Azerbaijan GP</span></h3>
+<p style="color:#b9b7ac;font-size:14px" id="race-circuit">Baku City Circuit</p></div>
+<div class="count" role="timer" aria-label="Countdown to lights out">
+<div><b id="cd-d">00</b><span>days</span></div><div><b id="cd-h">00</b><span>hrs</span></div><div><b id="cd-m">00</b><span>min</span></div><div><b id="cd-s">00</b><span>sec</span></div>
+</div>
+</section>
+
+<div class="marquee" aria-hidden="true"><span>Flat out · Since 2019 · LN4 · Always bringing the fight · Flat out · Since 2019 · LN4 · Always bringing the fight ·&nbsp;</span></div>
+
+<section class="band-dark" aria-label="Message">
+<div class="eyebrow hero-kicker">Message from Lando</div>
+<p class="quote rv" data-split>Redefining <em>limits</em>, fighting for <em>wins</em>, bringing it everywhere. This is only the <em>start</em>.</p>
+<div class="stats" data-stagger>
+<div class="stat"><b data-count="100">0+</b><span>Grand Prix starts and counting</span></div>
+<div class="stat"><b data-count="25">0+</b><span>Podiums and counting</span></div>
+<div class="stat"><b data-count="4">0+</b><span>Grand Prix wins and counting</span></div>
+</div>
+</section>
+
+<h2 class="section-title rv" id="ontrack" data-split>On track.</h2>
+<p class="section-sub rv">Street circuits, night races, last-lap lunges.</p>
+<section class="hscroll rv" data-stagger aria-label="Track gallery">
+<article class="gcard"><img src="assets/g-night.jpg" alt="McLaren under the lights in Singapore" loading="lazy"><div class="cap"><b>Night ops</b><span>Singapore · full send</span></div></article>
+<article class="gcard"><img src="assets/g-silverstone.jpg" alt="McLaren at the British Grand Prix" loading="lazy"><div class="cap"><b>Home hero</b><span>Silverstone roar</span></div></article>
+<article class="gcard"><img src="assets/g-quali.jpg" alt="McLaren in qualifying in Shanghai" loading="lazy"><div class="cap"><b>Quali lap</b><span>Hooked up when it counts</span></div></article>
+<article class="gcard"><img src="assets/g-hungary.jpg" alt="McLaren charging in Hungary" loading="lazy"><div class="cap"><b>Castle section</b><span>Millimetres from the wall</span></div></article>
+<article class="gcard"><img src="assets/g-suzuka.jpg" alt="McLaren through Spoon Curve at Suzuka 2026" loading="lazy"><div class="cap"><b>Spoon curve</b><span>Suzuka 2026 · MCL40</span></div></article>
+</section>
+
+<section class="split2" id="offtrack" aria-label="On and off track">
+<article class="panel rv" style="background:linear-gradient(150deg,#141421,#5a2b00 70%,#FF6A00)"><h3>On track</h3><p>Results, stats and trackside moments from the season.</p><div><a class="btn btn-lime" href="#helmets">View helmets</a></div></article>
+<article class="panel rv" style="background:linear-gradient(150deg,#1d1d12,#4a4a08 70%,#C8F52E);color:#141408"><h3>Off track</h3><p>Streams, golf swings, goofy fits and Quadrant chaos.</p><div><a class="btn btn-dark" href="#socials">Follow along</a></div></article>
+</section>
+
+<h2 class="section-title rv" id="helmets" data-split>Helmets hall of fame.</h2>
+<p class="section-sub rv">Hover any lid to flip it. Blobs forever. Or spin the live wireframe below.</p>
+<div class="helmstage rv" id="helmstage" aria-label="Interactive 3D wireframe helmet">
+<canvas id="helm3d"></canvas>
+<p>Live wireframe — coded by hand, no model file. Move your mouse to spin it.</p>
+</div>
+<section class="helm-grid" data-stagger aria-label="Helmets">
+<article class="helm"><div class="art"><i style="background:radial-gradient(circle at 50% 40%,#C8F52E,#1a3a10 75%)"></i><i style="background:radial-gradient(circle at 50% 40%,#FF6A00,#3a1500 75%)"></i></div><div class="meta"><b>Season base</b><span>2025</span></div></article>
+<article class="helm"><div class="art"><i style="background:radial-gradient(circle at 50% 40%,#cfd6e4,#3a3f4d 75%)"></i><i style="background:radial-gradient(circle at 50% 40%,#fff,#7a5cff 75%)"></i></div><div class="meta"><b>Disco ball</b><span>2025</span></div></article>
+<article class="helm"><div class="art"><i style="background:radial-gradient(circle at 50% 40%,#444,#000 75%)"></i><i style="background:radial-gradient(circle at 50% 40%,#C8F52E,#0c0c06 75%)"></i></div><div class="meta"><b>Dark glitter</b><span>2025</span></div></article>
+<article class="helm"><div class="art"><i style="background:radial-gradient(circle at 50% 40%,#f5efe0,#b09a6a 75%)"></i><i style="background:radial-gradient(circle at 50% 40%,#ff8ab2,#7a2bff 75%)"></i></div><div class="meta"><b>Porcelain</b><span>2024</span></div></article>
+<article class="helm"><div class="art"><i style="background:radial-gradient(circle at 50% 40%,#e33,#5c0a0a 75%)"></i><i style="background:radial-gradient(circle at 50% 40%,#fff,#c00 75%)"></i></div><div class="meta"><b>Japan</b><span>2024</span></div></article>
+<article class="helm"><div class="art"><i style="background:radial-gradient(circle at 50% 40%,#9be7ff,#0d2b45 75%)"></i><i style="background:radial-gradient(circle at 50% 40%,#C8F52E,#123a6b 75%)"></i></div><div class="meta"><b>Chrome</b><span>2023</span></div></article>
+</section>
+
+<section class="store" id="store" aria-label="Store">
+<div class="hero-kicker" style="color:#ffe9b8">LN4 Store · Fan tribute demo</div>
+<h2 class="section-title" style="color:#fff;margin-top:6px">Wear the papaya.</h2>
+<p style="opacity:.85;max-width:52ch;margin-bottom:18px">Caps, tees and posters in race-weekend colours. (Demo links only — the real store lives elsewhere.)</p>
+<div class="cta-row" style="justify-content:flex-start"><a class="btn btn-lime" href="#top">Shop the look</a></div>
+</section>
+
+<section aria-label="Partners">
+<h2 class="section-title rv" data-split>Partners &amp; campaigns.</h2>
+<p class="section-sub rv">Performance-obsessed brands riding along.</p>
+<div class="partners rv" data-stagger>
+<span class="pill" style="color:var(--ink);border-color:var(--line)">Google</span><span class="pill" style="color:var(--ink);border-color:var(--line)">Hilton</span><span class="pill" style="color:var(--ink);border-color:var(--line)">Tumi</span><span class="pill" style="color:var(--ink);border-color:var(--line)">Uber</span><span class="pill" style="color:var(--ink);border-color:var(--line)">Monster</span><span class="pill" style="color:var(--ink);border-color:var(--line)">Ralph Lauren</span><span class="pill" style="color:var(--ink);border-color:var(--line)">Quadrant</span><span class="pill" style="color:var(--ink);border-color:var(--line)">Bell Helmets</span>
+</div>
+</section>
+</main>
+
+<footer id="socials">
+<div class="foot-grid">
+<div>
+<h3 class="giant" data-split>Always bringing the <em>fight.</em></h3>
+<div class="news"><input id="news-email" type="email" placeholder="you@fastmail.com" aria-label="Email for newsletter"><button class="btn btn-lime" data-act="news">Sign up</button></div>
+<p class="fine" id="news-msg">Race-week emails. Unsubscribe anytime.</p>
+</div>
+<div><b>Pages</b><br><br><a class="link" style="color:#b9b7ac" href="#top">Home</a><br><a class="link" style="color:#b9b7ac" href="#ontrack">On Track</a><br><a class="link" style="color:#b9b7ac" href="#offtrack">Off Track</a><br><a class="link" style="color:#b9b7ac" href="#helmets">Helmets</a></div>
+<div><b>Follow</b><br><br><a class="link" style="color:#b9b7ac" href="#socials">TikTok</a><br><a class="link" style="color:#b9b7ac" href="#socials">Instagram</a><br><a class="link" style="color:#b9b7ac" href="#socials">YouTube</a><br><a class="link" style="color:#b9b7ac" href="#socials">Twitch</a></div>
+</div>
+<p class="fine" style="max-width:1200px;margin:18px auto 0;padding:0 40px">Unofficial fan-made tribute for learning only. Not affiliated with Lando Norris, McLaren, or Formula 1. Photos: Wikimedia Commons contributors (CC BY / CC BY-SA). © <span id="yr">2026</span></p>
+</footer>
+<script src="vendor/rive/rive.js" defer></script>
+<script src="js/app.js" defer></script>
+</body>
+</html>

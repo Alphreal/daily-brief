@@ -1,0 +1,53 @@
+/* PURPOSE: skins — buttons, cards, helmets, marquee items, forms. */
+.btn{display:inline-flex;align-items:center;justify-content:center;padding:11px 24px;border-radius:12px;font-weight:800;font-size:14px;border:1px solid transparent;cursor:pointer;transition:transform .15s,box-shadow .15s,background .15s;text-transform:uppercase;letter-spacing:.04em}
+.btn:active{transform:scale(.97)}
+.btn-lime{background:var(--lime);color:#141408}.btn-lime:hover{box-shadow:0 8px 24px rgba(200,245,46,.4)}
+.btn-dark{background:var(--ink);color:#fff}.btn-dark:hover{background:#000}
+.btn-line{background:transparent;border-color:var(--ink);color:var(--ink)}.btn-line:hover{background:var(--ink);color:#fff}
+.btn-papaya{background:var(--papaya);color:#fff}.btn-papaya:hover{filter:brightness(1.08)}
+.icon-btn{width:40px;height:40px;display:grid;place-items:center;border-radius:12px;border:1px solid var(--line);background:#fff;font-size:18px;cursor:pointer}
+.link{font-weight:800;text-decoration:underline;text-underline-offset:3px}
+.gcard{border-radius:var(--radius);overflow:hidden;background:#fff;border:1px solid var(--line);min-height:340px;display:flex;flex-direction:column;justify-content:flex-end;transition:transform .2s}
+.gcard img{width:100%;height:240px;object-fit:cover;display:block;background:linear-gradient(160deg,#222,#555);transition:transform .35s ease-out}
+.gcard:hover img{transform:scale(1.06)}
+.gcard:hover{transform:translateY(-4px)}
+.gcard .cap{padding:16px;background:rgba(255,255,255,.92)}
+.gcard .cap b{display:block;font-family:var(--disp);text-transform:uppercase;font-size:18px}
+.gcard .cap span{font-size:13px;color:var(--muted)}
+.panel{border-radius:var(--radius);padding:34px;min-height:300px;display:flex;flex-direction:column;justify-content:flex-end;gap:10px;color:#fff;overflow:hidden;position:relative;transition:transform .2s}
+.panel:hover{transform:translateY(-4px)}
+.panel h3{font-family:var(--disp);font-size:44px;text-transform:uppercase;line-height:.95}
+.panel p{opacity:.85;max-width:34ch}
+/* Helmet hover-swap: base art cross-fades to alt art (mimics LN hover gallery). */
+.helm{border-radius:var(--radius);overflow:hidden;background:var(--dark2);border:1px solid var(--dline);color:#fff;transition:transform .2s}
+.helm:hover{transform:translateY(-4px)}
+.helm .art{position:relative;height:190px}
+.helm .art i{position:absolute;inset:0;transition:opacity .3s}
+.helm .art i:last-child{opacity:0}
+.helm:hover .art i:last-child{opacity:1}
+.helm:hover .art i:first-child{opacity:0}
+.helm .meta{padding:14px 16px;display:flex;justify-content:space-between;align-items:center}
+.helm .meta b{font-family:var(--disp);text-transform:uppercase;font-size:19px}
+.helm .meta span{font-size:13px;color:#b9b7ac}
+.pill{border:1px solid var(--dline);border-radius:999px;padding:8px 18px;font-size:14px;color:#fff;background:rgba(255,255,255,.06)}
+.news{display:flex;gap:10px;margin-top:14px;max-width:420px}
+.news input{flex:1;padding:12px 16px;border-radius:12px;border:1px solid var(--dline);background:rgba(255,255,255,.06);color:#fff;font-size:14px}
+.news input::placeholder{color:#8b897f}
+.fine{font-size:12.5px;color:#8b897f;margin-top:18px}
+@supports not ((backdrop-filter:blur(1px)) or (-webkit-backdrop-filter:blur(1px))){
+.topbar{background:var(--paper)}
+}
+/* Split-text rise (JS-gated: no JS = plain readable text). */
+.js [data-split] .w{display:inline-block;overflow:hidden;vertical-align:bottom;padding-bottom:.09em;margin-bottom:-.09em}
+.js [data-split] .w>i{display:inline-block;font-style:inherit;transform:translateY(112%);transition:transform .55s cubic-bezier(.2,.7,.2,1);transition-delay:var(--rd,0s)}
+.js [data-split].in .w>i{transform:none}
+/* Loader + scroll progress */
+.loader{display:none}
+.js .loader{display:grid;place-items:center;align-content:center;position:fixed;inset:0;z-index:200;background:var(--dark);color:var(--lime);font-family:var(--disp);transition:opacity .4s,visibility 0s .45s;text-align:center}
+.js .loader.done{opacity:0;visibility:hidden}
+.load-num{font-size:76px;line-height:1}
+.load-bar{width:210px;height:4px;background:rgba(255,255,255,.15);border-radius:3px;overflow:hidden;margin:12px auto}
+.load-bar i{display:block;height:100%;width:0;background:var(--lime)}
+.loader p{letter-spacing:.24em;font-size:12px;text-transform:uppercase}
+.progress{position:fixed;top:0;left:0;right:0;height:3px;z-index:120}
+.progress i{display:block;height:100%;background:var(--papaya);transform:scaleX(0);transform-origin:left}

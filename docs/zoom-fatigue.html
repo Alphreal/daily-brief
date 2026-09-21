@@ -1,0 +1,47 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="description" content="Zoom Fatigue classroom looping animation: why long video classes drain students and teachers, plus 20-20-20 fixes.">
+<title>Zoom Fatigue — Classroom Loop</title>
+<style>
+body{background:#f7f7f5;color:#1a1a1a;font-family:ui-sans-serif,system-ui,-apple-system,Segoe UI,Roboto,sans-serif;margin:0}
+.wrap{max-width:980px;margin:0 auto;padding:24px 16px 64px}
+.card{background:#fff;border:1px solid #e7e5e4;border-radius:12px;padding:16px;margin:12px 0}
+.tldr{background:#fff;border:1px solid #e7e5e4;border-left:4px solid #1a1a1a;border-radius:12px;padding:16px;margin:16px 0}
+video,img{width:100%;height:auto;border-radius:12px;border:1px solid #e7e5e4;background:#000}
+.grid{display:grid;grid-template-columns:1fr;gap:12px}
+@media(min-width:720px){.grid{grid-template-columns:1fr 1fr 1fr}}
+a{color:#0f62fe}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+<header class="wrap" style="padding-bottom:0"><nav><a href="index.html">&larr; Brief index</a></nav>
+<h1>Zoom Fatigue — Classroom Edition (8s loop)</h1>
+<p>For students &amp; teachers: fresh → drained → recover. Play in class, then try the fix together.</p>
+</header>
+<main class="wrap" style="padding-top:0">
+<div class="tldr"><b>TL;DR</b> — Staring + seeing yourself + no movement = tired eyes &amp; foggy brain. Fix: 20-20-20, stretch, water, camera breaks.</div>
+<div class="card">
+<video controls loop muted playsinline preload="metadata">
+<source src="zoom-fatigue-classroom.webm" type="video/webm">
+<source src="zoom-fatigue-classroom.mp4" type="video/mp4">
+Sorry, your browser cannot play video. See the GIF below.
+</video>
+<p><a href="zoom-fatigue-classroom.mp4" download>Download MP4</a> · <a href="zoom-fatigue-classroom.webm" download>WebM</a> · <a href="zoom-fatigue-classroom.gif" download>GIF</a></p>
+</div>
+<div class="card"><h2>GIF fallback (no video needed)</h2><img src="zoom-fatigue-classroom.gif" alt="Looping cartoon of 9-student Zoom grid getting tired then recovering after a break"></div>
+<div class="grid">
+<div class="card"><h2>👁 Eyes</h2><p>Blink less on screen. Every 20 min, look 20 ft away for 20 sec.</p></div>
+<div class="card"><h2>🧍 Body</h2><p>Stand, roll shoulders, unclench jaw. Still images hide fidget needs.</p></div>
+<div class="card"><h2>📷 Mind</h2><p>Hide self-view, allow cameras-off breaks. Quiet class ≠ lazy class.</p></div>
+</div>
+<details class="card"><summary><b>Transcript (for screen readers / reduced motion)</b></summary>
+<p>0–2s: 9-tile class grid, 9:00 AM, energy 100%, faces bright. 2–5s: clock advances toward 3 PM, eyelids droop, bags appear, battery drops to ~25%, three tiles switch to “Camera off”. 5–7s: green banner “Fix: 20-20-20 · stretch · water” — faces lift, cameras return. 7–8s: loop back to fresh. Reduced-motion: this text replaces the motion.</p>
+</details>
+<footer class="card"><p>Built offline with Pillow + imageio-ffmpeg. Free to reuse in class. Tip for teachers: pause at Hour 5 and ask “what do you feel?”</p></footer>
+</main>
+</body>
+</html>

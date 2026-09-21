@@ -1,0 +1,424 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="Adobe homepage recreation for learning — Creative Cloud, Firefly, Acrobat, Business, Students. Single-file HTML/CSS/JS.">
+<title>Adobe: Creative, marketing and document management solutions</title>
+<style>
+/* LEARN: :root = design tokens. Change once, whole site updates. */
+*{margin:0;padding:0;box-sizing:border-box}
+:root{--red:#FA0F00;--blue:#1473E6;--blue-dark:#0d66d0;--ink:#222;--muted:#505050;--line:#e1e1e1;--bg:#fff;--soft:#f5f5f5;--radius:16px;--max:1440px}
+html{scroll-behavior:smooth}
+body{font-family:"Adobe Clean","Source Sans Pro",-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;color:var(--ink);background:var(--bg);line-height:1.5;-webkit-font-smoothing:antialiased}
+a{color:inherit;text-decoration:none}
+img{max-width:100%}
+:focus-visible{outline:3px solid var(--blue);outline-offset:2px;border-radius:4px}
+/* LEARN: header/nav/main/footer = semantic shell. Screen readers + SEO use these. */
+.promo{background:#000;color:#fff;text-align:center;font-size:13.5px;padding:9px 16px}
+.promo a{text-decoration:underline;text-underline-offset:3px}
+header{position:sticky;top:0;z-index:60;background:rgba(255,255,255,.96);backdrop-filter:blur(8px);border-bottom:1px solid var(--line);transition:box-shadow .2s}
+header.scrolled{box-shadow:0 4px 20px rgba(0,0,0,.08)}
+.nav{max-width:var(--max);margin:0 auto;display:flex;align-items:center;gap:16px;padding:0 20px;height:64px}
+.logo{display:flex;align-items:center;gap:9px;font-weight:700;font-size:19px;flex-shrink:0}
+.logo-mark{width:30px;height:26px;background:var(--red);color:#fff;font-weight:900;display:flex;align-items:center;justify-content:center;font-size:19px;clip-path:polygon(0 0,100% 0,100% 100%,50% 76%,0 100%);border-radius:2px}
+.nav-links{display:flex;gap:4px;flex:1}
+.has-menu{position:relative}
+.has-menu>button{background:none;border:0;font:inherit;font-size:14px;padding:10px 10px;cursor:pointer;color:#2c2c2c;border-radius:8px}
+.has-menu>button:hover{background:#f0f0f0}
+/* LEARN: dropdown = hidden panel on hover/focus. No JS needed. */
+.mega{display:none;position:absolute;top:100%;left:0;background:#fff;border:1px solid var(--line);border-radius:14px;box-shadow:0 18px 50px rgba(0,0,0,.14);padding:14px;min-width:520px;grid-template-columns:1fr 1fr;gap:4px}
+.has-menu:hover .mega,.has-menu:focus-within .mega{display:grid}
+.mega a{display:flex;gap:10px;padding:10px;border-radius:10px}
+.mega a:hover{background:#f5f5f5}
+.mega b{display:block;font-size:14px}.mega span{font-size:13px;color:var(--muted)}
+.mini-ic{width:32px;height:32px;border-radius:7px;flex-shrink:0;display:grid;place-items:center;color:#fff;font-weight:900;font-size:13px}
+.nav-actions{display:flex;align-items:center;gap:12px;font-size:14px}
+.btn{display:inline-flex;align-items:center;justify-content:center;padding:10px 22px;border-radius:999px;font-size:14px;font-weight:700;border:1px solid transparent;cursor:pointer;transition:transform .15s,box-shadow .15s,background .15s}
+.btn:active{transform:scale(.98)}
+.btn-blue{background:var(--blue);color:#fff}.btn-blue:hover{background:var(--blue-dark)}
+.btn-outline{background:#fff;border-color:#222;color:#222}.btn-outline:hover{background:#222;color:#fff}
+.btn-white{background:#fff;color:#222}.btn-white:hover{box-shadow:0 6px 20px rgba(0,0,0,.25)}
+.btn-dark{background:#222;color:#fff}
+.link{color:var(--blue);font-weight:700;font-size:14px}.link:hover{text-decoration:underline;text-underline-offset:3px}
+.icon-btn{width:36px;height:36px;display:grid;place-items:center;border-radius:50%;border:0;background:none;font-size:18px;cursor:pointer}
+.icon-btn:hover{background:#eee}
+.burger{display:none}
+/* search overlay */
+.search-ov{display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:80}
+.search-ov.open{display:block}
+.search-box{max-width:640px;margin:90px auto;background:#fff;border-radius:16px;padding:18px}
+.search-box input{width:100%;font-size:18px;padding:14px 16px;border-radius:10px;border:1px solid var(--line)}
+.quick{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
+.quick a{border:1px solid var(--line);border-radius:20px;padding:6px 14px;font-size:13px}
+main{max-width:var(--max);margin:0 auto;padding:0 20px 10px}
+h1.hero-h{font-size:clamp(34px,4.4vw,54px);line-height:1.02;font-weight:800;letter-spacing:-.02em;margin-bottom:14px}
+.eyebrow{font-size:12.5px;letter-spacing:.1em;text-transform:uppercase;opacity:.85;margin-bottom:10px;font-weight:700}
+/* LEARN: hero carousel = slides stacked, one .active visible. JS rotates class. */
+.hero{position:relative;margin:18px 0 14px}
+.slides{position:relative;border-radius:20px;overflow:hidden;min-height:540px}
+.slide{position:absolute;inset:0;display:grid;grid-template-columns:1.05fr .95fr;opacity:0;transform:scale(1.015);transition:opacity .35s ease-out,transform .35s ease-out;pointer-events:none}
+.slide.active{position:relative;opacity:1;transform:none;pointer-events:auto}
+.slide-copy{padding:54px 48px;display:flex;flex-direction:column;justify-content:center;min-height:540px}
+.slide-copy p.lead{font-size:17px;margin-bottom:22px;max-width:46ch}
+.slide-art{min-height:300px;position:relative;overflow:hidden}
+.s1{background:linear-gradient(100deg,#141021 42%,#3a1470 60%,#7a2bff 78%,#ff5ca8 100%)}
+.s1 .slide-copy{color:#fff}
+.s1 .slide-art{background:radial-gradient(45% 40% at 30% 30%,#ffd84d 0%,transparent 70%),radial-gradient(40% 45% at 70% 65%,#00e5ff 0%,transparent 70%),radial-gradient(55% 55% at 55% 45%,#ff7a00 0%,#ff2e7a 55%,transparent 72%),linear-gradient(135deg,#2b0a4a,#7a2bff)}
+.s2{background:linear-gradient(100deg,#fff 45%,#fde8f3 65%,#e3e0ff 85%,#d6f2ff 100%)}
+.s2 .slide-art{background:radial-gradient(50% 50% at 50% 50%,#ff8ac2 0%,#b18cff 45%,#7dd8ff 75%,transparent 76%),linear-gradient(#f6e8ff,#dff3ff)}
+.s3{background:linear-gradient(100deg,#1b1040 45%,#4b1fa2 75%,#7a3cff 100%)}
+.s3 .slide-copy{color:#fff}
+.s3 .slide-art{background:radial-gradient(60% 60% at 60% 40%,#fff 0%,#d9ccff 30%,#7a3cff 60%,transparent 71%),linear-gradient(#2a1660,#7a3cff)}
+.blob{position:absolute;border-radius:50%;filter:blur(2px);opacity:.9;animation:float 7s ease-in-out infinite}
+@keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-14px)}}
+.cta-row{display:flex;gap:14px;align-items:center;flex-wrap:wrap;margin-bottom:12px}
+.fine{font-size:12.5px;opacity:.75}
+.dots{position:absolute;left:48px;bottom:20px;display:flex;gap:8px;align-items:center;z-index:3}
+.dot{width:28px;height:4px;border-radius:4px;background:rgba(128,128,128,.4);border:0;cursor:pointer;padding:0}
+.dot.active{background:#222}.s1 .dot.active,.s3 .dot.active{background:#fff}
+.arrows{position:absolute;right:20px;bottom:14px;display:flex;gap:8px;z-index:3}
+.arrows button{width:38px;height:38px;border-radius:50%;border:1px solid rgba(0,0,0,.18);background:rgba(255,255,255,.9);cursor:pointer;font-size:17px}
+.thumbs{display:grid;grid-template-columns:repeat(5,1fr);gap:12px;margin:12px 0 20px}
+.thumb{border:2px solid transparent;border-radius:12px;overflow:hidden;cursor:pointer;background:var(--soft);padding:0}
+.thumb.active{border-color:var(--blue)}
+.thumb div{height:64px}
+.thumb span{display:block;font-size:12px;padding:6px;background:#fff;text-align:left;font-weight:600}
+.pills{display:flex;gap:10px;flex-wrap:wrap;margin:4px 0 18px}
+.pills button{border:1px solid var(--line);border-radius:999px;padding:8px 16px;font-size:14px;background:#fff;cursor:pointer;transition:all .15s}
+.pills button.active,.pills button:hover{background:#222;color:#fff;border-color:#222;transform:translateY(-1px)}
+.section-title{font-size:clamp(24px,3vw,32px);letter-spacing:-.01em;margin:30px 0 6px}
+.section-sub{color:var(--muted);margin-bottom:16px;font-size:16px}
+/* bento */
+.bento{display:grid;grid-template-columns:1.2fr 1fr 1fr;grid-template-rows:280px 280px;gap:14px;margin-bottom:8px}
+.bcard{border-radius:var(--radius);overflow:hidden;position:relative;display:flex;flex-direction:column;justify-content:flex-end;padding:24px;border:1px solid var(--line);transition:transform .15s,box-shadow .15s;background:#fff}
+.bcard:hover{transform:translateY(-3px);box-shadow:0 14px 34px rgba(0,0,0,.12)}
+.bcard h3{font-size:22px;margin:6px 0}
+.bcard p{font-size:14.5px;color:var(--muted);margin-bottom:10px}
+.bcard.big{grid-row:span 2;justify-content:flex-end;color:#fff;border:0}
+.tag{font-size:12px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;background:rgba(0,0,0,.55);color:#fff;display:inline-block;padding:4px 10px;border-radius:20px;width:fit-content}
+.big .tag{background:rgba(255,255,255,.22)}
+/* business + students */
+.split{display:grid;grid-template-columns:1fr 1fr;border-radius:20px;overflow:hidden;margin:22px 0;border:1px solid var(--line)}
+.split-copy{padding:48px 44px}
+.split-copy h2{font-size:clamp(26px,3vw,36px);line-height:1.1;margin-bottom:12px}
+.split-copy p{margin-bottom:20px}
+.dark{background:#0d0d1f;color:#fff;border-color:#000}
+.dark .art{background:conic-gradient(from 20deg,#ff2e7a,#7a3cff,#00c2ff,#ff2e7a)}
+.cream{background:#fff8e6}.cream .art{background:conic-gradient(from 200deg,#ffcf3f,#ff7a3f,#7a3cff,#ffcf3f)}
+.art{min-height:320px}
+.stats{display:flex;gap:26px;margin:18px 0;flex-wrap:wrap}
+.stats b{font-size:26px;display:block}.stats span{font-size:13px;opacity:.7}
+/* pricing toggle — LEARN: JS toggles data attr, CSS shows right price */
+.toggle{display:inline-flex;background:#eee;border-radius:999px;padding:4px;margin-bottom:16px}
+.toggle button{border:0;background:none;padding:8px 18px;border-radius:999px;font-weight:700;cursor:pointer;font-size:14px}
+.toggle button.on{background:#222;color:#fff}
+.price{font-size:30px;font-weight:800}.per{color:var(--muted);font-size:14px}
+/* tools */
+.tools{background:#fafafa;border:1px solid var(--line);border-radius:20px;padding:30px;margin:26px 0}
+.tools-head{display:flex;gap:14px;align-items:center;flex-wrap:wrap;justify-content:space-between}
+.tools-head input{padding:10px 16px;border-radius:999px;border:1px solid var(--line);font-size:14px;min-width:240px}
+.tools-grid{display:grid;grid-template-columns:repeat(6,1fr);gap:12px;margin-top:18px}
+.tool{background:#fff;border:1px solid var(--line);border-radius:14px;padding:18px 12px;text-align:center;transition:transform .15s,box-shadow .15s}
+.tool:hover{transform:translateY(-3px);box-shadow:0 10px 26px rgba(0,0,0,.1)}
+.icon{width:46px;height:46px;border-radius:9px;margin:0 auto 10px;display:grid;place-items:center;font-weight:900;color:#fff;font-size:18px}
+.tool b{font-size:14px;display:block}.tool span{font-size:12.5px;color:var(--muted)}
+/* horizontal scroll — LEARN: scroll-snap gives phone swipe feeling */
+.hscroll{display:grid;grid-auto-flow:column;grid-auto-columns:minmax(300px,380px);gap:14px;overflow-x:auto;padding-bottom:10px;scroll-snap-type:x mandatory}
+.hscroll .bcard{scroll-snap-align:start;min-height:380px}
+.card{background:#fff;border:1px solid var(--line);border-radius:var(--radius);overflow:hidden;display:flex;flex-direction:column}
+.card-img{height:190px}
+.card-body{padding:20px;display:flex;flex-direction:column;gap:8px;flex:1}
+.grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:10px}
+.quotes{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+.quote{border:1px solid var(--line);border-radius:var(--radius);padding:24px;background:#fff}
+.stars{color:#f5a623;letter-spacing:2px;font-size:14px;margin-bottom:8px}
+/* FAQ — LEARN: details/summary = accordion with zero JS */
+.faq{max-width:860px;margin:10px 0 26px}
+details{border:1px solid var(--line);border-radius:12px;margin-bottom:10px;background:#fff;overflow:hidden}
+summary{padding:16px 18px;cursor:pointer;font-weight:700;list-style:none}
+summary::-webkit-details-marker{display:none}
+summary::after{content:"+";float:right;font-size:20px;color:var(--blue)}
+details[open] summary::after{content:"–"}
+.details-inner{display:grid;grid-template-rows:0fr;transition:grid-template-rows .25s ease-out}
+details[open] .details-inner{grid-template-rows:1fr}
+.details-inner>div{overflow:hidden}
+.details-inner p{padding:0 18px 18px;color:var(--muted)}
+/* learn panel */
+.learn{border:2px dashed var(--blue);border-radius:20px;padding:28px;margin:30px 0;background:#f6f9ff}
+.learn code{background:#222;color:#7df9a8;padding:2px 8px;border-radius:6px;font-size:13px}
+.learn-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-top:14px}
+.learn-grid div{background:#fff;border:1px solid var(--line);border-radius:12px;padding:16px;font-size:14px}
+footer{background:#fafafa;border-top:1px solid var(--line);margin-top:26px}
+.foot-inner{max-width:var(--max);margin:0 auto;padding:36px 20px;display:grid;grid-template-columns:repeat(5,1fr);gap:20px;font-size:14px}
+.foot-inner h4{font-size:14px;margin-bottom:10px}
+.foot-inner a{display:block;color:var(--muted);padding:3px 0}.foot-inner a:hover{text-decoration:underline}
+.social{display:flex;gap:8px;margin-top:12px}
+.social a{width:32px;height:32px;border:1px solid var(--line);border-radius:50%;display:grid;place-items:center;background:#fff}
+.foot-bottom{max-width:var(--max);margin:0 auto;padding:16px 20px;border-top:1px solid var(--line);display:flex;justify-content:space-between;font-size:13px;color:var(--muted);flex-wrap:wrap;gap:10px}
+/* reveal — LEARN: IntersectionObserver adds .in when scrolled into view */
+.rv{opacity:0;transform:translateY(14px);transition:opacity .4s ease-out,transform .4s ease-out}
+.rv.in{opacity:1;transform:none}
+@media(max-width:1020px){.bento{grid-template-columns:1fr 1fr;grid-template-rows:auto}.bcard.big{grid-row:auto;min-height:420px}.tools-grid{grid-template-columns:repeat(3,1fr)}.nav-links{display:none}.burger{display:block}.slide{grid-template-columns:1fr}.slide-copy{min-height:0}.slide-art{min-height:240px}.split{grid-template-columns:1fr}.grid3,.quotes,.learn-grid{grid-template-columns:1fr}.foot-inner{grid-template-columns:1fr 1fr}.thumbs{grid-template-columns:repeat(3,1fr)}}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important;scroll-behavior:auto!important}.rv{opacity:1;transform:none}}
+@media print{details{break-inside:avoid}header,.arrows,.dots,.pills,.search-ov{display:none}}
+</style>
+</head>
+<body>
+
+<!-- LEARN #1: promo bar = simplest conversion element. One line, one link. -->
+<div class="promo">Students and teachers save 71% on Creative Cloud. <a href="#students">See the deal</a></div>
+
+<!-- LEARN #2: <header> sticky nav. Real Adobe has 4 mega-menus; we do 4 with CSS-only dropdowns. -->
+<header id="top">
+<nav class="nav" aria-label="Primary">
+<button class="burger icon-btn" aria-label="Open menu" onclick="document.getElementById('mnav').style.display='flex'">☰</button>
+<a class="logo" href="#top" aria-label="Adobe home"><span class="logo-mark">A</span> Adobe</a>
+<div class="nav-links">
+<div class="has-menu"><button aria-haspopup="true">Creativity &amp; Design ▾</button>
+<div class="mega">
+<a href="#make"><span class="mini-ic" style="background:#31A8FF">Ps</span><span><b>Photoshop</b><span>Images, Harmonize, generative fill</span></span></a>
+<a href="#make"><span class="mini-ic" style="background:#FF9A00">Ai</span><span><b>Illustrator</b><span>Vector logos &amp; icons</span></span></a>
+<a href="#make"><span class="mini-ic" style="background:#9999FF">Pr</span><span><b>Premiere</b><span>Video + new Color Mode</span></span></a>
+<a href="#firefly"><span class="mini-ic" style="background:linear-gradient(135deg,#ff5c8a,#7a3cff)">Fi</span><span><b>Firefly</b><span>Safe AI image &amp; video</span></span></a>
+</div></div>
+<div class="has-menu"><button>PDF &amp; E-signatures ▾</button>
+<div class="mega">
+<a href="#acrobat"><span class="mini-ic" style="background:#FA0F00">Ac</span><span><b>Acrobat Studio</b><span>Summaries + PDF Spaces</span></span></a>
+<a href="#acrobat"><span class="mini-ic" style="background:#222">Es</span><span><b>E-signatures</b><span>Sign in seconds</span></span></a>
+</div></div>
+<div class="has-menu"><button>Marketing &amp; Commerce ▾</button>
+<div class="mega">
+<a href="#business"><span class="mini-ic" style="background:#0d0d1f">Ge</span><span><b>GenStudio</b><span>On-brand AI content</span></span></a>
+<a href="#business"><span class="mini-ic" style="background:#1473E6">Ex</span><span><b>Experience Cloud</b><span>Personalize every touch</span></span></a>
+</div></div>
+<div class="has-menu"><button>Learn &amp; Support ▾</button>
+<div class="mega">
+<a href="#learn"><span class="mini-ic" style="background:#00875a">Tu</span><span><b>Tutorials</b><span>How each block was built</span></span></a>
+<a href="#faq"><span class="mini-ic" style="background:#666">?</span><span><b>Help &amp; FAQ</b><span>Plain-language answers</span></span></a>
+</div></div>
+</div>
+<div class="nav-actions">
+<button class="icon-btn" aria-label="Search" onclick="document.getElementById('sov').classList.add('open')">⌕</button>
+<a href="#" onclick="alert('Demo only — sign-in would open here.');return false">Sign in</a>
+<a class="btn btn-outline" href="#students">Buy now</a>
+</div>
+</nav>
+<!-- mobile drawer -->
+<div id="mnav" style="display:none;position:fixed;inset:0;background:#fff;z-index:90;flex-direction:column;padding:20px;gap:12px">
+<button class="icon-btn" style="align-self:flex-end" aria-label="Close" onclick="document.getElementById('mnav').style.display='none'">✕</button>
+<a href="#make"><b>Creativity &amp; Design</b></a><a href="#acrobat"><b>PDF &amp; E-signatures</b></a><a href="#business"><b>Marketing &amp; Commerce</b></a><a href="#learn"><b>Learn &amp; Support</b></a><a class="btn btn-blue" href="#students">Buy now</a>
+</div>
+</header>
+
+<div class="search-ov" id="sov" role="dialog" aria-label="Search">
+<div class="search-box">
+<input id="q" placeholder="Search Photoshop, Acrobat, Firefly…" oninput="filterTools(this.value)">
+<div class="quick"><a href="#make">Photoshop</a><a href="#acrobat">Acrobat</a><a href="#firefly">Firefly</a><a href="#business">GenStudio</a><a href="#" onclick="document.getElementById('sov').classList.remove('open')">Close ✕</a></div>
+</div>
+</div>
+
+<main>
+<h1 style="position:absolute;left:-9999px">Adobe — Creative, marketing and document management solutions</h1>
+
+<!-- LEARN #3: hero = Z-pattern. Eye: logo → headline → CTA → art. One primary action per slide. -->
+<section class="hero" aria-label="Featured stories" id="hero">
+<div class="slides" id="slides">
+<article class="slide s1 active">
+<div class="slide-copy">
+<div class="eyebrow">Adobe Creative Cloud Pro</div>
+<h1 class="hero-h">Create at the highest level.</h1>
+<p class="lead">Photoshop, Illustrator, Premiere + Firefly in one plan. Harmonize blending, Color Mode grading, 20+ apps. Free 7-day trial.</p>
+<div class="cta-row"><a class="btn btn-white" href="#students">Free trial</a><a href="#make" class="link" style="color:#fff">See all plans →</a></div>
+<p class="fine">See terms. Cancel free within 14 days.</p>
+</div>
+<div class="slide-art" role="img" aria-label="Vivid AI flower artwork">
+<span class="blob" style="width:220px;height:220px;left:8%;top:12%;background:radial-gradient(circle,#ffd84d,transparent 70%)"></span>
+<span class="blob" style="width:300px;height:300px;right:6%;bottom:8%;background:radial-gradient(circle,#00e5ff,transparent 70%);animation-delay:1.2s"></span>
+<span class="blob" style="width:180px;height:180px;left:40%;bottom:18%;background:radial-gradient(circle,#ff5ca8,transparent 70%);animation-delay:2s"></span>
+</div>
+</article>
+<article class="slide s2" id="firefly">
+<div class="slide-copy">
+<div class="eyebrow">Adobe Firefly</div>
+<h1 class="hero-h">All the best models, all in one place.</h1>
+<p class="lead">Generate images, vectors and video that are commercially safe. Boards, styles, and partner models included.</p>
+<div class="cta-row"><a class="btn btn-blue" href="#make">Create with Firefly</a><a href="#new" class="link">What's new →</a></div>
+<p class="fine" style="color:var(--muted)">Free credits monthly. No card needed.</p>
+</div>
+<div class="slide-art" role="img" aria-label="Pastel Firefly artwork"></div>
+</article>
+<article class="slide s3" id="acrobat">
+<div class="slide-copy">
+<div class="eyebrow">Acrobat Studio</div>
+<h1 class="hero-h">Get work done. Faster.</h1>
+<p class="lead">Summarize contracts in seconds, share PDF Spaces, e-sign anywhere. The new AI document workspace.</p>
+<div class="cta-row"><a class="btn btn-white" href="#acrobat-sec">Free trial</a><a href="#acrobat-sec" class="link" style="color:#fff">Learn more →</a></div>
+<p class="fine">Includes 100GB cloud storage.</p>
+</div>
+<div class="slide-art" role="img" aria-label="Purple Acrobat artwork"></div>
+</article>
+</div>
+<div class="dots" role="tablist" aria-label="Choose story">
+<button class="dot active" onclick="go(0)" aria-label="Slide 1"></button>
+<button class="dot" onclick="go(1)" aria-label="Slide 2"></button>
+<button class="dot" onclick="go(2)" aria-label="Slide 3"></button>
+</div>
+<div class="arrows"><button onclick="step(-1)" aria-label="Previous">‹</button><button onclick="step(1)" aria-label="Next">›</button></div>
+</section>
+
+<div class="thumbs" aria-hidden="true">
+<button class="thumb active" onclick="go(0)"><div style="background:linear-gradient(135deg,#7a2bff,#ff5ca8)"></div><span>Creative Cloud Pro</span></button>
+<button class="thumb" onclick="go(1)"><div style="background:linear-gradient(135deg,#fde8f3,#7dd8ff)"></div><span>Firefly models</span></button>
+<button class="thumb" onclick="go(2)"><div style="background:linear-gradient(135deg,#4b1fa2,#b18cff)"></div><span>Acrobat Studio</span></button>
+<button class="thumb" onclick="document.getElementById('business').scrollIntoView()"><div style="background:linear-gradient(135deg,#0d0d1f,#00c2ff)"></div><span>Adobe for Business</span></button>
+<button class="thumb" onclick="document.getElementById('students').scrollIntoView()"><div style="background:linear-gradient(135deg,#ffcf3f,#7a3cff)"></div><span>Students −71%</span></button>
+</div>
+
+<!-- LEARN #4: filter pills = tiny JS. Click sets active, hides non-matching cards via data-cat. -->
+<div class="pills" role="group" aria-label="Filter products" id="pills">
+<button class="active" data-f="all">All</button>
+<button data-f="image">Image</button>
+<button data-f="video">Video</button>
+<button data-f="doc">Documents</button>
+<button data-f="ai">AI</button>
+</div>
+
+<h2 class="section-title rv" id="make">Everything you need to make anything.</h2>
+<p class="section-sub rv">Create with the top tools. <a class="link" href="#tools">See all products →</a></p>
+<section class="bento rv" id="bento" aria-label="Top products">
+<article class="bcard big" data-cat="image ai" style="background:linear-gradient(160deg,#001E36 20%,#0a4a8a 55%,#31A8FF 100%)">
+<span class="tag">Most popular</span><h3>Photoshop</h3><p style="color:#cfe8ff">Blend images seamlessly with new Harmonize. Remove, replace, create in one click.</p><div><a class="btn btn-white" href="#">Explore Photoshop</a></div>
+</article>
+<article class="bcard" data-cat="image"><span class="tag">Vector</span><h3>Illustrator</h3><p>Logos &amp; icons at any size.</p><a class="link" href="#">Explore →</a></article>
+<article class="bcard" data-cat="video ai"><span class="tag">New</span><h3>Premiere + Color Mode</h3><p>Grade video in one click.</p><a class="link" href="#">Explore →</a></article>
+<article class="bcard" data-cat="ai image video"><span class="tag">AI</span><h3>Firefly</h3><p>Safe image, vector &amp; video models.</p><a class="link" href="#">Create →</a></article>
+<article class="bcard" data-cat="doc ai" id="acrobat-sec"><span class="tag">PDF</span><h3>Acrobat Studio</h3><p>Summaries + PDF Spaces.</p><a class="link" href="#">Try free →</a></article>
+</section>
+
+<section class="split dark rv" id="business" aria-label="Adobe for business">
+<div class="split-copy">
+<div class="eyebrow">Adobe for Business</div>
+<h2>Orchestrate customer experiences with AI.</h2>
+<p style="opacity:.85">GenStudio + Experience Cloud personalize every email, page and ad — on brand, at scale.</p>
+<div class="stats"><div><b>85%</b><span>of Fortune 100 use Adobe</span></div><div><b>3×</b><span>faster campaign launch</span></div><div><b>24/7</b><span>AI support</span></div></div>
+<div class="cta-row"><a class="btn btn-white" href="#">It starts with Adobe</a><a class="link" style="color:#9ec5ff" href="#">Watch demo →</a></div>
+</div>
+<div class="art" role="img" aria-label="Business gradient artwork"></div>
+</section>
+
+<section class="split cream rv" id="students" aria-label="Students discount">
+<div class="split-copy">
+<div class="eyebrow">Students and teachers</div>
+<h2>Save 71% on Creative Cloud.</h2>
+<div class="toggle" role="group" aria-label="Billing period">
+<button id="bM" class="on" onclick="bill('m')">Monthly</button><button id="bY" onclick="bill('y')">Annual</button>
+</div>
+<p><span class="price" id="price">$11.99</span> <span class="per" id="per">/mo first year, then $23.99</span></p>
+<p style="color:var(--muted)">20+ apps + Express + Firefly credits + 100GB. Cancel anytime in 14 days.</p>
+<div class="cta-row"><a class="btn btn-blue" href="#">Free trial</a><a class="link" href="#">Verify eligibility →</a></div>
+</div>
+<div class="art" role="img" aria-label="Student collage artwork"></div>
+</section>
+
+<section class="tools rv" id="tools" aria-label="All tools">
+<div class="tools-head">
+<div><h2 class="section-title" style="margin:0">Tools that work for you.</h2><p class="section-sub" style="margin:4px 0 0">Type to filter — this is live JS search.</p></div>
+<input id="tq" placeholder="Filter tools… e.g. pdf" aria-label="Filter tools" oninput="filterTools(this.value)">
+</div>
+<div class="tools-grid" id="tgrid">
+<div class="tool" data-n="photoshop image"><div class="icon" style="background:#31A8FF">Ps</div><b>Photoshop</b><span>Image editing</span></div>
+<div class="tool" data-n="illustrator vector"><div class="icon" style="background:#FF9A00">Ai</div><b>Illustrator</b><span>Vector design</span></div>
+<div class="tool" data-n="premiere video"><div class="icon" style="background:#9999FF">Pr</div><b>Premiere</b><span>Video editing</span></div>
+<div class="tool" data-n="after effects video"><div class="icon" style="background:#9999FF">Ae</div><b>After Effects</b><span>Motion graphics</span></div>
+<div class="tool" data-n="acrobat pdf document"><div class="icon" style="background:#FA0F00">Ac</div><b>Acrobat</b><span>PDF &amp; sign</span></div>
+<div class="tool" data-n="firefly ai image"><div class="icon" style="background:linear-gradient(135deg,#ff5c8a,#7a3cff)">Fi</div><b>Firefly</b><span>Generative AI</span></div>
+<div class="tool" data-n="express social"><div class="icon" style="background:linear-gradient(135deg,#1473E6,#00dfd8)">Ex</div><b>Express</b><span>Quick social</span></div>
+<div class="tool" data-n="lightroom photo"><div class="icon" style="background:#31A8FF">Lr</div><b>Lightroom</b><span>Photo presets</span></div>
+<div class="tool" data-n="indesign layout"><div class="icon" style="background:#FF3366">Id</div><b>InDesign</b><span>Page layout</span></div>
+<div class="tool" data-n="genstudio business"><div class="icon" style="background:#0d0d1f">Gs</div><b>GenStudio</b><span>Marketing AI</span></div>
+<div class="tool" data-n="creative cloud all"><div class="icon" style="background:#222">Cc</div><b>Creative Cloud</b><span>All apps</span></div>
+<div class="tool" data-n="substance 3d"><div class="icon" style="background:#666">St</div><b>Substance 3D</b><span>3D &amp; AR</span></div>
+</div>
+</section>
+
+<h2 class="section-title rv" id="new">Explore what's new. <span style="font-weight:400;font-size:15px;color:var(--muted)">← swipe on phone</span></h2>
+<section class="hscroll rv" aria-label="New features">
+<article class="bcard" style="background:linear-gradient(150deg,#ff5ca8,#7a3cff);color:#fff;border:0"><span class="tag">Premiere</span><h3>Introducing Color Mode</h3><p style="color:#ffe6f2">One-click cinematic grade.</p><a class="btn btn-white" href="#">Explore Premiere</a></article>
+<article class="bcard" style="background:linear-gradient(150deg,#00dfd8,#007cf0);color:#002;border:0"><span class="tag">Firefly</span><h3>One place to make anything</h3><p style="color:#083">Boards + partner models.</p><a class="btn btn-dark" href="#">Explore Firefly</a></article>
+<article class="bcard" style="background:linear-gradient(150deg,#ffcf3f,#ff4e50);border:0"><span class="tag">Photoshop</span><h3>Harmonize blending</h3><p>Objects melt into scenes.</p><a class="btn btn-dark" href="#">Explore Photoshop</a></article>
+<article class="bcard"><span class="tag">Acrobat</span><h3>PDF Spaces</h3><p>Share a living project hub.</p><a class="link" href="#">Read story →</a></article>
+</section>
+
+<h2 class="section-title rv">Loved by creators.</h2>
+<section class="quotes rv">
+<div class="quote"><div class="stars">★★★★★</div><p>“Creative Cloud lets me create effortlessly and focus on what's important.” — <b>Maya, illustrator</b></p><br><a class="link" href="#">See all plans</a></div>
+<div class="quote"><div class="stars">★★★★★</div><p>“With Acrobat AI I summarize 40-page contracts in seconds.” — <b>Daniel, freelancer</b></p><br><a class="link" href="#">Try Acrobat</a></div>
+<div class="quote"><div class="stars">★★★★★</div><p>“If it wasn't for Premiere, I wouldn't be editing full-time.” — <b>Linh, YouTuber</b></p><br><a class="link" href="#">See all plans</a></div>
+</section>
+
+<h2 class="section-title rv">Adobe News</h2>
+<section class="grid3 rv">
+<div class="card"><div class="card-img" style="background:linear-gradient(135deg,#222,#666)"></div><div class="card-body"><b>PDF Spaces are here</b><p style="color:var(--muted);font-size:14px">New ways to share knowledge across teams.</p><a class="link" href="#">Read story</a></div></div>
+<div class="card"><div class="card-img" style="background:linear-gradient(135deg,#1473E6,#00dfd8)"></div><div class="card-body"><b>Email marketing, transformed</b><p style="color:var(--muted);font-size:14px">How Adobe cut production time 70%.</p><a class="link" href="#">Read story</a></div></div>
+<div class="card"><div class="card-img" style="background:linear-gradient(135deg,#7a3cff,#ff5ca8)"></div><div class="card-body"><b>Adobe for creativity in Claude</b><p style="color:var(--muted);font-size:14px">Create from chat, finish in Express.</p><a class="link" href="#">Read story</a></div></div>
+</section>
+
+<section class="faq rv" id="faq" aria-label="FAQ">
+<h2 class="section-title">Questions, answered.</h2>
+<details open><summary>Is there a free trial?</summary><div class="details-inner"><div><p>Yes — 7 days for Creative Cloud and Acrobat. No charge if you cancel within 14 days. This pattern uses a native &lt;details&gt; element: zero JS, keyboard accessible.</p></div></div></details>
+<details><summary>How much is Creative Cloud for students?</summary><div class="details-inner"><div><p>$11.99/mo first year (71% off), then standard price. Toggle Monthly/Annual above to see how one JS function swaps two text nodes.</p></div></div></details>
+<details><summary>Is Firefly commercially safe?</summary><div class="details-inner"><div><p>Firefly models are trained on licensed + public-domain content and include Content Credentials. That's why brands trust it.</p></div></div></details>
+</section>
+
+<!-- LEARN #5: read this to learn. Each row = one core web skill. -->
+<section class="learn rv" id="learn" aria-label="How this page is built">
+<div class="eyebrow">For learning — how this recreation works</div>
+<h2 style="font-size:26px;margin-bottom:8px">Steal this structure for any website.</h2>
+<p style="color:var(--muted)">Open this file in a text editor. Search <code>LEARN #1…#5</code>. Every effect below is 5–15 lines.</p>
+<div class="learn-grid">
+<div><b>1. Shell</b><br><code>&lt;header&gt; &lt;main&gt; &lt;footer&gt;</code><br>One H1. Sticky header. Max-width 1440px. This alone makes you look pro.</div>
+<div><b>2. Layout</b><br><code>grid / flex</code><br>Hero = grid 2-col → 1-col on phone. Bento = 3-col with one card spanning 2 rows.</div>
+<div><b>3. Motion</b><br><code>transform + opacity</code><br>Hover lift, carousel fade, scroll reveal. Never animate width. 150–300ms.</div>
+<div><b>4. JS in 4 verbs</b><br><code>go() / filter / toggle / observe</code><br>Carousel, live search, pricing, reveal. View source bottom &lt;script&gt;.</div>
+<div><b>5. Feel the vibe</b><br>Adobe vibe = big type + saturated gradients + round 16px cards + generous whitespace. Copy those 4 and any clone feels “Adobe”.</div>
+<div><b>Try now</b><br>Change <code>--blue</code> in :root, swap a headline, add one <code>.bcard</code>. Reload — you just “shipped”.</div>
+</div>
+</section>
+</main>
+
+<footer>
+<div class="foot-inner">
+<div><h4>Shop for</h4><a href="#">Creative Cloud</a><a href="#">Photoshop</a><a href="#">Adobe Express</a><a href="#">Photography</a><a href="#">Acrobat</a><a href="#">View all</a></div>
+<div><h4>For business</h4><a href="#">Creative Cloud for teams</a><a href="#">GenStudio</a><a href="#">Experience Cloud</a><a href="#">Document Cloud</a></div>
+<div><h4>Experience Cloud</h4><a href="#">What is it?</a><a href="#">Analytics</a><a href="#">Commerce</a><a href="#">Marketo Engage</a></div>
+<div><h4>Support</h4><a href="#">Help Center</a><a href="#">Download &amp; install</a><a href="#">Tutorials</a><a href="#faq">FAQ</a><a href="#learn">How this site was built</a></div>
+<div><h4>Company</h4><a href="#">About</a><a href="#">Careers</a><a href="#">Newsroom</a><a href="#">Investors</a>
+<div class="social"><a href="#" aria-label="X">𝕏</a><a href="#" aria-label="YouTube">▶</a><a href="#" aria-label="Instagram">◍</a><a href="#" aria-label="LinkedIn">in</a></div></div>
+</div>
+<div class="foot-bottom"><span>© <span id="yr">2026</span> study recreation. Not affiliated with Adobe Inc. All art is CSS gradients.</span><span>🌐 Change region · Privacy · Terms · Cookies · AdChoices</span></div>
+</footer>
+
+<script>
+// LEARN #6: all JS on this page = 4 tiny patterns. Read them, you can rebuild 80% of marketing sites.
+// 1) Carousel
+let cur=0;const slides=[...document.querySelectorAll('.slide')],dots=[...document.querySelectorAll('.dot')],thumbs=[...document.querySelectorAll('.thumb')];
+function go(i){cur=(i+slides.length)%slides.length;slides.forEach((s,k)=>s.classList.toggle('active',k===cur));dots.forEach((d,k)=>d.classList.toggle('active',k===cur));thumbs.forEach((t,k)=>t.classList.toggle('active',k===cur));restart();}
+function step(d){go(cur+d)}
+let timer=setInterval(()=>go(cur+1),6000);
+function restart(){clearInterval(timer);timer=setInterval(()=>go(cur+1),6000);}
+// 2) Pills filter
+document.getElementById('pills').addEventListener('click',e=>{if(e.target.tagName!=='BUTTON')return;document.querySelectorAll('#pills button').forEach(b=>b.classList.remove('active'));e.target.classList.add('active');const f=e.target.dataset.f;document.querySelectorAll('#bento .bcard').forEach(c=>{c.style.display=(f==='all'||c.dataset.cat.includes(f))?'':'none';});});
+// 3) Pricing toggle + tools search
+function bill(w){document.getElementById('bM').classList.toggle('on',w==='m');document.getElementById('bY').classList.toggle('on',w==='y');document.getElementById('price').textContent=w==='m'?'$11.99':'$143.88';document.getElementById('per').textContent=w==='m'?'/mo first year, then $23.99':'/yr first year, billed annually';}
+function filterTools(v){v=(v||'').toLowerCase();document.querySelectorAll('#tgrid .tool').forEach(t=>{t.style.display=t.dataset.n.includes(v)?'':'none';});const q=document.getElementById('tq');if(q&&document.activeElement!==q&&document.getElementById('q')===document.activeElement)q.value=v;}
+// 4) Sticky shadow + scroll reveal + year
+addEventListener('scroll',()=>document.getElementById('top').classList.toggle('scrolled',scrollY>4),{passive:true});
+const io=new IntersectionObserver(es=>es.forEach(e=>{if(e.isIntersecting){e.target.classList.add('in');io.unobserve(e.target);}}),{threshold:.12});
+document.querySelectorAll('.rv').forEach(el=>io.observe(el));
+document.getElementById('yr').textContent=new Date().getFullYear();
+document.getElementById('sov').addEventListener('click',e=>{if(e.target.id==='sov')e.target.classList.remove('open')});
+addEventListener('keydown',e=>{if(e.key==='Escape')document.getElementById('sov').classList.remove('open')});
+</script>
+</body>
+</html>

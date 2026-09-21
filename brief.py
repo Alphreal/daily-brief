@@ -223,6 +223,7 @@ def html_shell(title, body_inner):
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>{esc(title)}</title>
 <script src="https://cdn.tailwindcss.com"></script>
+<link rel="stylesheet" href="assets/vendor/aos/aos.css">
 <style>
 body{{background:#f7f7f5;color:#1a1a1a;font-family:ui-sans-serif,system-ui,-apple-system,Segoe UI,Roboto,sans-serif;margin:0}}
 .wrap{{max-width:880px;margin:0 auto;padding:24px 16px 64px}}
@@ -248,7 +249,8 @@ th{{background:#f7f7f5;font-weight:600}}
 .chapter h2{{margin-top:14px}}
 .toc a{{background:#fff;border:1px solid #e7e5e4;border-radius:999px;padding:4px 12px;font-size:13px;color:#1a1a1a;text-decoration:none}}
 @media(min-width:1100px){{.wrap{{max-width:1100px}}.grid2{{grid-template-columns:1fr 1fr 1fr}}}}
-@media print{{.topbar{{display:none}}.toc{{position:static;background:#fff}}.wrap{{max-width:100%;padding:0}}body{{background:#fff}}.card,.tldr{{break-inside:avoid}}}}
+@media print{{.topbar{{display:none}}.toc{{position:static;background:#fff}}.wrap{{max-width:100%;padding:0}}body{{background:#fff}}.card,.tldr{{break-inside:avoid}}[data-aos]{{opacity:1!important;transform:none!important}}}}
+@media (prefers-reduced-motion:reduce){{[data-aos]{{opacity:1!important;transform:none!important;transition:none!important}}}}
 </style>
 </head>
 <body>
@@ -256,6 +258,10 @@ th{{background:#f7f7f5;font-weight:600}}
 <div class="topbar"><a href="index.html">&larr; Alph</a><span class="muted">Daily Brief</span></div>
 {body_inner}
 </div>
+<script src="assets/vendor/aos/aos.js" defer></script>
+<script defer>
+document.addEventListener('DOMContentLoaded',function(){{try{{if(window.matchMedia&&matchMedia('(prefers-reduced-motion: reduce)').matches)return;if(!window.AOS)return;document.querySelectorAll('.card').forEach(function(el){{if(!el.hasAttribute('data-aos'))el.setAttribute('data-aos','fade-up')}});AOS.init({{once:true,duration:300,offset:60}});}}catch(e){{}}}});
+</script>
 </body>
 </html>"""
 
@@ -347,6 +353,19 @@ def export_docs(html_files):
     for src in html_files:
         if src.endswith(".html"):
             shutil.copy(src, os.path.join(DOCS_DIR, os.path.basename(src)))
+
+def sync_vendor_assets():
+    """Copy docs/assets (vendored libs) to OUT_DIR so local preview matches Pages.
+    Returns repo-relative paths of vendored css/js for git add/push."""
+    src = os.path.join(DOCS_DIR, "assets")
+    if os.path.isdir(src):
+        shutil.copytree(src, os.path.join(OUT_DIR, "assets"), dirs_exist_ok=True)
+    out = []
+    for root, _, files in os.walk(src):
+        for fn in files:
+            if fn.endswith((".css", ".js", ".svg")):
+                out.append(os.path.relpath(os.path.join(root, fn), BASE_DIR).replace(os.sep, "/"))
+    return sorted(out)
 
 def auto_push_docs(date_str, mode, docs_files):
     """Best-effort git add/commit/push of the given docs/*.html files so Pages auto-updates.
@@ -475,12 +494,13 @@ def main():
         # then rebuild docs/index.html from what is actually in docs/.
         seen = [os.path.join(OUT_DIR, fn) for fn, _, _ in entries] + [ipath]
         export_docs(seen)
+        vendor_rel = sync_vendor_assets()
         docs_entries = list_html_entries(DOCS_DIR)
         with open(os.path.join(DOCS_DIR, "index.html"), "w", encoding="utf-8") as f:
             f.write(render_index_html(docs_entries))
         print(f"Exported to docs/: {sorted(os.path.basename(p) for p in seen)}")
         if not args.no_push:
-            docs_rel = [os.path.join("docs", os.path.basename(p)) for p in seen]
+            docs_rel = [os.path.join("docs", os.path.basename(p)) for p in seen] + vendor_rel
             _, msg = auto_push_docs(date_str, mode, docs_rel)
             print(msg)
         else:

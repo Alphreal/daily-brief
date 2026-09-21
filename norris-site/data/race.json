@@ -1,0 +1,6 @@
+{
+  "_comment": "Next race card. Lights-out in UTC. If the date passes, the countdown sits at 00 (update after each GP).",
+  "gp": "Azerbaijan GP",
+  "circuit": "Baku City Circuit",
+  "lightsOut": "2026-09-26T07:00:00Z"
+}

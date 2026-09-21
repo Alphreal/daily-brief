@@ -1,0 +1,10 @@
+{
+  "_comment": "MOCK of Adobe MAS merch-card backend. Real adobe.com fetches prices/CTAs per locale from mas.adobe.com + personalization manifests. We hardcode nothing in HTML — JS injects from here, same pattern.",
+  "locale": "en-us",
+  "cards": {
+    "cc-pro": { "title": "Creative Cloud Pro", "price": "$59.99/mo", "cta": "Free trial", "term": "Annual, billed monthly", "promo": "Save 40% on Creative Cloud Pro for the first three months." },
+    "firefly": { "title": "Firefly Pro", "price": "Free credits monthly", "cta": "Create with Firefly", "term": "No card needed" },
+    "acrobat": { "title": "Acrobat Studio", "price": "$19.99/mo", "cta": "Free trial", "term": "Includes 100GB" },
+    "students": { "title": "Students & Teachers", "price": "$11.99/mo", "cta": "Free trial", "term": "71% off first year" }
+  }
+}

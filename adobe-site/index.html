@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="Adobe homepage recreation for learning — split-file edition.">
+<title>Adobe: Creative, marketing and document management solutions</title>
+<meta name="theme-color" content="#ffffff">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='6' fill='%23FA0F00'/%3E%3Ctext x='16' y='23' font-family='Arial' font-size='18' font-weight='900' fill='white' text-anchor='middle'%3EA%3C/text%3E%3C/svg%3E">
+<link rel="stylesheet" href="css/tokens.css">
+<link rel="stylesheet" href="css/layout.css">
+<link rel="stylesheet" href="css/components.css">
+</head>
+<body>
+<!-- MAIN: promo + header. Edit nav labels here. Styles: layout.css / components.css -->
+<div class="promo">Students and teachers save 71% on Creative Cloud. <a href="#students">See the deal</a></div>
+<header id="top">
+<nav class="nav" aria-label="Primary">
+<button class="burger icon-btn" aria-label="Open menu" data-act="mnav" data-open="1">☰</button>
+<a class="logo" href="#top" aria-label="Adobe home"><span class="logo-mark">A</span> Adobe</a>
+<div class="nav-links">
+<div class="has-menu"><button aria-haspopup="true">Creativity &amp; Design ▾</button>
+<div class="mega">
+<a href="#make"><span class="mini-ic" style="background:#31A8FF">Ps</span><span><b>Photoshop</b><span>Images, Harmonize, generative fill</span></span></a>
+<a href="#make"><span class="mini-ic" style="background:#FF9A00">Ai</span><span><b>Illustrator</b><span>Vector logos &amp; icons</span></span></a>
+<a href="#make"><span class="mini-ic" style="background:#9999FF">Pr</span><span><b>Premiere</b><span>Video + new Color Mode</span></span></a>
+<a href="#firefly"><span class="mini-ic" style="background:linear-gradient(135deg,#ff5c8a,#7a3cff)">Fi</span><span><b>Firefly</b><span>Safe AI image &amp; video</span></span></a>
+</div></div>
+<div class="has-menu"><button>PDF &amp; E-signatures ▾</button>
+<div class="mega">
+<a href="#acrobat-sec"><span class="mini-ic" style="background:#FA0F00">Ac</span><span><b>Acrobat Studio</b><span>Summaries + PDF Spaces</span></span></a>
+<a href="#acrobat-sec"><span class="mini-ic" style="background:#222">Es</span><span><b>E-signatures</b><span>Sign in seconds</span></span></a>
+</div></div>
+<div class="has-menu"><button>Marketing &amp; Commerce ▾</button>
+<div class="mega">
+<a href="#business"><span class="mini-ic" style="background:#0d0d1f">Ge</span><span><b>GenStudio</b><span>On-brand AI content</span></span></a>
+<a href="#business"><span class="mini-ic" style="background:#1473E6">Ex</span><span><b>Experience Cloud</b><span>Personalize every touch</span></span></a>
+</div></div>
+<div class="has-menu"><button>Learn &amp; Support ▾</button>
+<div class="mega">
+<a href="#learn"><span class="mini-ic" style="background:#00875a">Tu</span><span><b>Tutorials</b><span>How each block was built</span></span></a>
+<a href="#faq"><span class="mini-ic" style="background:#666">?</span><span><b>Help &amp; FAQ</b><span>Plain-language answers</span></span></a>
+</div></div>
+</div>
+<div class="nav-actions">
+<button class="icon-btn" aria-label="Search" data-act="search" data-open="1">⌕</button>
+<a href="#" data-act="signin">Sign in</a>
+<a class="btn btn-outline" href="#students">Buy now</a>
+</div>
+</nav>
+<div id="mnav" style="display:none;position:fixed;inset:0;background:#fff;z-index:90;flex-direction:column;padding:20px;gap:12px">
+<button class="icon-btn" style="align-self:flex-end" aria-label="Close" data-act="mnav" data-open="0">✕</button>
+<a href="#make"><b>Creativity &amp; Design</b></a><a href="#acrobat-sec"><b>PDF &amp; E-signatures</b></a><a href="#business"><b>Marketing &amp; Commerce</b></a><a href="#learn"><b>Learn &amp; Support</b></a><a class="btn btn-blue" href="#students">Buy now</a>
+</div>
+</header>
+
+<div class="search-ov" id="sov" role="dialog" aria-label="Search">
+<div class="search-box">
+<input id="q" placeholder="Search Photoshop, Acrobat, Firefly…" data-filter="tools">
+<div class="quick"><a href="#make">Photoshop</a><a href="#acrobat-sec">Acrobat</a><a href="#firefly">Firefly</a><a href="#business">GenStudio</a><a href="#" data-act="search" data-open="0">Close ✕</a></div>
+</div>
+</div>
+
+<main>
+<h1 style="position:absolute;left:-9999px">Adobe — Creative, marketing and document management solutions</h1>
+
+<!-- MAIN: hero carousel. Behavior: js/app.js go()/step(). Skin: layout.css .slide -->
+<section class="hero" aria-label="Featured stories" id="hero">
+<div class="slides" id="slides">
+<!-- QUEST 2 — merch promo card. Real Adobe fills price/CTA/promo from MAS API per locale.
+     Method: data-merch slot + merch.json + backend-mimic.js. HTML holds FALLBACK text only,
+     so file:// offline still reads fine and locale swap = one JSON edit, zero HTML edits. -->
+<article class="slide s1 active" data-merch="cc-pro">
+<div class="slide-copy">
+<div class="eyebrow">Creative Cloud</div>
+<h2 class="hero-h">Create at the highest level.</h2>
+<p class="lead">Photoshop, Illustrator, Premiere, and much more. Work with the tools behind the world's most iconic creative content.</p>
+<p class="promo-line"><strong data-promo>Save 40% on Creative Cloud Pro for the first three months.</strong> New subscribers only. <a href="#" class="link" style="color:#fff">See terms.</a></p>
+<div class="cta-row"><a class="btn btn-white" href="#students" data-cta>Free trial</a></div>
+</div>
+<div class="slide-art" role="img" aria-label="Vivid AI flower artwork">
+<span class="blob" style="width:220px;height:220px;left:8%;top:12%;background:radial-gradient(circle,#ffd84d,transparent 70%)"></span>
+<span class="blob" style="width:300px;height:300px;right:6%;bottom:8%;background:radial-gradient(circle,#00e5ff,transparent 70%);animation-delay:1.2s"></span>
+</div>
+</article>
+<article class="slide s2" id="firefly">
+<div class="slide-copy">
+<div class="eyebrow">Adobe Firefly</div>
+<h2 class="hero-h">All the best models, all in one place.</h2>
+<p class="lead">Generate images, vectors and video that are commercially safe. Boards, styles, and partner models included.</p>
+<div class="cta-row"><a class="btn btn-blue" href="#make">Create with Firefly</a><a href="#new" class="link">What's new →</a></div>
+<p class="fine" style="color:var(--muted)">Free credits monthly. No card needed.</p>
+</div>
+<div class="slide-art" role="img" aria-label="Pastel Firefly artwork"></div>
+</article>
+<article class="slide s3">
+<div class="slide-copy">
+<div class="eyebrow">Acrobat Studio</div>
+<h2 class="hero-h">Get work done. Faster.</h2>
+<p class="lead">Summarize contracts in seconds, share PDF Spaces, e-sign anywhere.</p>
+<div class="cta-row"><a class="btn btn-white" href="#acrobat-sec">Free trial</a><a href="#acrobat-sec" class="link" style="color:#fff">Learn more →</a></div>
+</div>
+<div class="slide-art" role="img" aria-label="Purple Acrobat artwork"></div>
+</article>
+</div>
+<div class="dots" role="tablist" aria-label="Choose story">
+<button class="dot active" data-act="go" data-i="0" aria-label="Slide 1"></button>
+<button class="dot" data-act="go" data-i="1" aria-label="Slide 2"></button>
+<button class="dot" data-act="go" data-i="2" aria-label="Slide 3"></button>
+</div>
+<div class="arrows"><button data-act="step" data-d="-1" aria-label="Previous">‹</button><button data-act="step" data-d="1" aria-label="Next">›</button></div>
+</section>
+
+<!-- QUEST 1 — hero category tabs. Real Adobe: tablist overlapping the hero bottom
+     (PDF essentials / Creativity and design / Content creation / Adobe for Business / Students),
+     switching the tabpanel content. Method: role=tablist + buttons keep existing go()/scroll
+     behavior — same ARIA shape as Adobe, zero new JS. Chosen over rebuilding a video hero
+     because tabs teach the pattern; video BG is just a <video> swap later. -->
+<div class="thumbs" role="tablist" aria-label="Choose story">
+<button class="thumb" role="tab" data-act="go" data-i="2"><div style="background:linear-gradient(135deg,#4b1fa2,#b18cff)"></div><span>PDF essentials ›</span></button>
+<button class="thumb active" role="tab" data-act="go" data-i="0"><div style="background:linear-gradient(135deg,#7a2bff,#ff5ca8)"></div><span>Creativity and design ›</span></button>
+<button class="thumb" role="tab" data-act="go" data-i="1"><div style="background:linear-gradient(135deg,#fde8f3,#7dd8ff)"></div><span>Content creation ›</span></button>
+<button class="thumb" data-act="scroll" data-to="business"><div style="background:linear-gradient(135deg,#0d0d1f,#00c2ff)"></div><span>Adobe for Business ›</span></button>
+<button class="thumb" data-act="scroll" data-to="students"><div style="background:linear-gradient(135deg,#ffcf3f,#7a3cff)"></div><span>Students and teachers ›</span></button>
+</div>
+
+<div class="pills" role="group" aria-label="Filter products" id="pills">
+<button class="active" data-f="all">All</button>
+<button data-f="image">Image</button>
+<button data-f="video">Video</button>
+<button data-f="doc">Documents</button>
+<button data-f="ai">AI</button>
+</div>
+
+<h2 class="section-title rv" id="make">Everything you need to make anything.</h2>
+<p class="section-sub rv">Create with the top tools. <a class="link" href="#tools">See all products →</a></p>
+<section class="bento" id="bento" data-stagger aria-label="Top products">
+<article class="bcard big" data-cat="image ai" style="background:linear-gradient(160deg,#001E36 20%,#0a4a8a 55%,#31A8FF 100%)">
+<span class="tag">Most popular</span><h3>Photoshop</h3><p style="color:#cfe8ff">Blend images seamlessly with new Harmonize.</p><div><a class="btn btn-white" href="#">Explore Photoshop</a></div>
+</article>
+<article class="bcard" data-cat="image"><span class="tag">Vector</span><h3>Illustrator</h3><p>Logos &amp; icons at any size.</p><a class="link" href="#">Explore →</a></article>
+<article class="bcard" data-cat="video ai"><span class="tag">New</span><h3>Premiere + Color Mode</h3><p>Grade video in one click.</p><a class="link" href="#">Explore →</a></article>
+<article class="bcard" data-cat="ai image video"><span class="tag">AI</span><h3>Firefly</h3><p>Safe image, vector &amp; video models.</p><a class="link" href="#">Create →</a></article>
+<article class="bcard" data-cat="doc ai" id="acrobat-sec"><span class="tag">PDF</span><h3>Acrobat Studio</h3><p>Summaries + PDF Spaces.</p><a class="link" href="#">Try free →</a></article>
+</section>
+
+<section class="split dark rv" id="business" aria-label="Adobe for business">
+<div class="split-copy">
+<div class="eyebrow">Adobe for Business</div>
+<h2>Orchestrate customer experiences with AI.</h2>
+<p style="opacity:.85">GenStudio + Experience Cloud personalize every email, page and ad.</p>
+<div class="stats"><div><b>85%</b><span>of Fortune 100 use Adobe</span></div><div><b>3×</b><span>faster launch</span></div></div>
+<div class="cta-row"><a class="btn btn-white" href="#">It starts with Adobe</a></div>
+</div>
+<div class="art" role="img" aria-label="Business gradient artwork"></div>
+</section>
+
+<section class="split cream rv" id="students" aria-label="Students discount">
+<div class="split-copy">
+<div class="eyebrow">Students and teachers</div>
+<h2>Save 71% on Creative Cloud.</h2>
+<div class="toggle" role="group" aria-label="Billing period">
+<button id="bM" class="on" data-act="bill" data-w="m">Monthly</button><button id="bY" data-act="bill" data-w="y">Annual</button>
+</div>
+<p><span class="price" id="price">$11.99</span> <span class="per" id="per">/mo first year, then $23.99</span></p>
+<div class="cta-row"><a class="btn btn-blue" href="#">Free trial</a><a class="link" href="#">Verify eligibility →</a></div>
+</div>
+<div class="art" role="img" aria-label="Student collage artwork"></div>
+</section>
+
+<section class="tools rv" id="tools" aria-label="All tools">
+<div class="tools-head">
+<div><h2 class="section-title" style="margin:0">Tools that work for you.</h2><p class="section-sub" style="margin:4px 0 0">Type to filter — live JS search.</p></div>
+<input id="tq" placeholder="Filter tools… e.g. pdf" aria-label="Filter tools" data-filter="tools">
+</div>
+<div class="tools-grid" id="tgrid">
+<div class="tool" data-n="photoshop image"><div class="icon" style="background:#31A8FF">Ps</div><b>Photoshop</b><span>Image editing</span></div>
+<div class="tool" data-n="illustrator vector"><div class="icon" style="background:#FF9A00">Ai</div><b>Illustrator</b><span>Vector design</span></div>
+<div class="tool" data-n="premiere video"><div class="icon" style="background:#9999FF">Pr</div><b>Premiere</b><span>Video editing</span></div>
+<div class="tool" data-n="after effects video"><div class="icon" style="background:#9999FF">Ae</div><b>After Effects</b><span>Motion graphics</span></div>
+<div class="tool" data-n="acrobat pdf document"><div class="icon" style="background:#FA0F00">Ac</div><b>Acrobat</b><span>PDF &amp; sign</span></div>
+<div class="tool" data-n="firefly ai image"><div class="icon" style="background:linear-gradient(135deg,#ff5c8a,#7a3cff)">Fi</div><b>Firefly</b><span>Generative AI</span></div>
+<div class="tool" data-n="express social"><div class="icon" style="background:linear-gradient(135deg,#1473E6,#00dfd8)">Ex</div><b>Express</b><span>Quick social</span></div>
+<div class="tool" data-n="lightroom photo"><div class="icon" style="background:#31A8FF">Lr</div><b>Lightroom</b><span>Photo presets</span></div>
+<div class="tool" data-n="indesign layout"><div class="icon" style="background:#FF3366">Id</div><b>InDesign</b><span>Page layout</span></div>
+<div class="tool" data-n="genstudio business"><div class="icon" style="background:#0d0d1f">Gs</div><b>GenStudio</b><span>Marketing AI</span></div>
+<div class="tool" data-n="creative cloud all"><div class="icon" style="background:#222">Cc</div><b>Creative Cloud</b><span>All apps</span></div>
+<div class="tool" data-n="substance 3d"><div class="icon" style="background:#666">St</div><b>Substance 3D</b><span>3D &amp; AR</span></div>
+</div>
+</section>
+
+<h2 class="section-title rv" id="new">Explore what's new.</h2>
+<section class="hscroll" data-stagger aria-label="New features">
+<article class="bcard" style="background:linear-gradient(150deg,#ff5ca8,#7a3cff);color:#fff;border:0"><span class="tag">Premiere</span><h3>Introducing Color Mode</h3><p style="color:#ffe6f2">One-click cinematic grade.</p><a class="btn btn-white" href="#">Explore Premiere</a></article>
+<article class="bcard" style="background:linear-gradient(150deg,#00dfd8,#007cf0);border:0"><span class="tag">Firefly</span><h3>One place to make anything</h3><p>Boards + partner models.</p><a class="btn btn-dark" href="#">Explore Firefly</a></article>
+<article class="bcard" style="background:linear-gradient(150deg,#ffcf3f,#ff4e50);border:0"><span class="tag">Photoshop</span><h3>Harmonize blending</h3><p>Objects melt into scenes.</p><a class="btn btn-dark" href="#">Explore Photoshop</a></article>
+</section>
+
+<h2 class="section-title rv">Loved by creators.</h2>
+<section class="quotes" data-stagger>
+<div class="quote"><div class="stars">★★★★★</div><p>“Creative Cloud lets me create effortlessly.” — <b>Maya, illustrator</b></p><br><a class="link" href="#">See all plans</a></div>
+<div class="quote"><div class="stars">★★★★★</div><p>“Acrobat AI summarizes 40-page contracts in seconds.” — <b>Daniel</b></p><br><a class="link" href="#">Try Acrobat</a></div>
+<div class="quote"><div class="stars">★★★★★</div><p>“Without Premiere I wouldn't edit full-time.” — <b>Linh</b></p><br><a class="link" href="#">See all plans</a></div>
+</section>
+
+<section class="faq rv" id="faq" aria-label="FAQ">
+<h2 class="section-title">Questions, answered.</h2>
+<details open><summary>Is there a free trial?</summary><div class="details-inner"><div><p>Yes — 7 days. Cancel free within 14 days. Native &lt;details&gt;: zero JS.</p></div></div></details>
+<details><summary>How much for students?</summary><div class="details-inner"><div><p>$11.99/mo first year (71% off). Toggle above swaps two text nodes.</p></div></div></details>
+</section>
+
+<section class="learn rv" id="learn" aria-label="How this page is built">
+<div class="eyebrow">For learning — how this recreation works</div>
+<h2 style="font-size:26px;margin-bottom:8px">Steal this structure for any website.</h2>
+<p style="color:var(--muted)">Start at <code>FILEMAP.md</code>, then read only the file you need.</p>
+<div class="learn-grid">
+<div><b>1. Shell</b><br><code>index.html</code> only structure + links.</div>
+<div><b>2. Tokens</b><br><code>css/tokens.css</code> — change <code>--blue</code> once.</div>
+<div><b>3. JS verbs</b><br><code>js/app.js</code> — go / filter / bill / reveal.</div>
+</div>
+</section>
+</main>
+
+<footer>
+<div class="foot-inner">
+<div><h4>Shop for</h4><a href="#">Creative Cloud</a><a href="#">Photoshop</a><a href="#">Acrobat</a><a href="#">View all</a></div>
+<div><h4>For business</h4><a href="#">GenStudio</a><a href="#">Experience Cloud</a></div>
+<div><h4>Support</h4><a href="#">Help Center</a><a href="#faq">FAQ</a><a href="#learn">How this was built</a></div>
+<div><h4>Company</h4><a href="#">About</a><a href="#">Careers</a><a href="#">Newsroom</a></div>
+<div><h4>Legal</h4><a href="#">Privacy</a><a href="#">Terms</a><a href="#">Cookies</a></div>
+</div>
+<div class="foot-bottom"><span>© <span id="yr">2026</span> study recreation. Not affiliated with Adobe Inc.</span><span>Privacy · Terms · Cookies</span></div>
+</footer>
+<script src="js/app.js" defer></script>
+<script src="js/backend-mimic.js" defer></script>
+</body>
+</html>
