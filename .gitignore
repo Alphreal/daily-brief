@@ -12,6 +12,15 @@ brief-out/
 *.log
 .opencode/*.log
 
+# Python cache
+__pycache__/
+*.pyc
+
+# Local secrets / databases (keep *.example tracked)
+.env
+*.db
+*.sqlite3
+
 # Dependencies
 node_modules/
 

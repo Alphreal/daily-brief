@@ -1,0 +1,14 @@
+{
+  "name": "ln4-server",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Tiny backend for norris-site: race API + newsletter signups (Express + built-in SQLite).",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "express": "^4.21.2",
+    "pg": "^8.23.0"
+  }
+}
