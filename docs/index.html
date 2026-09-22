@@ -114,7 +114,7 @@ if ('IntersectionObserver' in window) {
 }
 document.addEventListener('visibilitychange', function(){ run = !document.hidden; if (run) frame(); });
 let rT;
-window.addEventListener('resize', function(){ clearTimeout(rT); rT = setTimeout(function(){ location.reload(); }, 400); });
+window.addEventListener('resize', function(){ clearTimeout(rT); rT = setTimeout(function(){ try { const w = hero.clientWidth || W, h = hero.clientHeight || H; renderer.setSize(w, h, false); cam.left = -w/2; cam.right = w/2; cam.top = h/2; cam.bottom = -h/2; cam.updateProjectionMatrix(); } catch (e) {} }, 400); });
 frame();
 } catch (e) { /* static gradient fallback stays */ }
 })();
