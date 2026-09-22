@@ -140,15 +140,15 @@ def html_shell(title, body_inner):
 <script src="https://cdn.tailwindcss.com"></script>
 <link rel="stylesheet" href="assets/vendor/aos/aos.css">
 <style>
-body{{background:#f7f7f5;color:#1a1a1a;font-family:ui-sans-serif,system-ui,-apple-system,Segoe UI,Roboto,sans-serif;margin:0}}
+body{{background:#f7f7f5;color:#1a1a1a;font-family:ui-sans-serif,system-ui,-apple-system,Segoe UI,Roboto,sans-serif;margin:0;overflow-x:clip}}
 .wrap{{max-width:880px;margin:0 auto;padding:24px 16px 64px}}
 .topbar{{display:flex;justify-content:space-between;align-items:center;margin-bottom:16px}}
 .topbar a{{color:#555;text-decoration:none;font-size:14px}}
-.card{{background:#fff;border:1px solid #e7e5e4;border-radius:12px;padding:16px;margin:12px 0}}
+.card{{background:#fff;border:1px solid #e7e5e4;border-radius:12px;padding:16px;margin:12px 0;overflow-wrap:anywhere;min-width:0}}
 .tldr{{background:#fff;border:1px solid #e7e5e4;border-left:4px solid #1a1a1a;border-radius:12px;padding:16px;margin:16px 0}}
 .badge{{display:inline-block;background:#f1f0ee;border-radius:999px;padding:2px 10px;font-size:12px;margin-right:6px}}
 .muted{{color:#6b7280;font-size:13px}}
-.grid2{{display:grid;grid-template-columns:1fr;gap:0}}
+.grid2{{display:grid;grid-template-columns:1fr;gap:0;min-width:0}}
 @media(min-width:720px){{.grid2{{grid-template-columns:1fr 1fr;gap:12px}}.grid2 .card{{margin:0}}}}
 .sec{{margin-top:28px}}
 a{{color:#0f62fe}}
@@ -162,12 +162,12 @@ th{{background:#f7f7f5;font-weight:600}}
 .hero h1{{font-size:30px}}
 .hero3d{{position:relative;overflow:hidden;border-radius:14px;border:1px solid #e7e5e4;background:radial-gradient(120% 100% at 50% 0%,#ffffff 0%,#f7f7f5 70%);padding:30px 20px;text-align:center;margin:4px 0 16px}}
 .hero3d canvas{{position:absolute;inset:0;width:100%;height:100%;pointer-events:none}}
-.hero3d h1{{position:relative;font-size:30px}}
+.hero3d h1{{position:relative;font-size:clamp(22px,7vw,30px)}}
 .hero3d .muted{{position:relative}}
 @media print{{.hero3d canvas{{display:none}}}}
 .chapter{{background:#fff;border:1px solid #e7e5e4;border-radius:14px;padding:4px 20px 16px;margin:20px 0}}
 .chapter h2{{margin-top:14px}}
-.toc a{{background:#fff;border:1px solid #e7e5e4;border-radius:999px;padding:4px 12px;font-size:13px;color:#1a1a1a;text-decoration:none}}
+.toc a{{background:#fff;border:1px solid #e7e5e4;border-radius:999px;padding:8px 14px;font-size:13px;color:#1a1a1a;text-decoration:none}}
 @media(min-width:1100px){{.wrap{{max-width:1100px}}.grid2{{grid-template-columns:1fr 1fr 1fr}}}}
 @media print{{.topbar{{display:none}}.toc{{position:static;background:#fff}}.wrap{{max-width:100%;padding:0}}body{{background:#fff}}.card,.tldr{{break-inside:avoid}}[data-aos]{{opacity:1!important;transform:none!important}}}}
 @media (prefers-reduced-motion:reduce){{[data-aos]{{opacity:1!important;transform:none!important;transition:none!important}}}}
