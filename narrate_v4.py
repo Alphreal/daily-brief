@@ -2,6 +2,7 @@
 """V4 slice 1: expressive SSML narration (NamMinh), per-line mp3 + durations.
 Skips existing files (resume-safe). Writes ttv4/narration.json.
 """
+
 import asyncio
 import json
 import os
@@ -24,35 +25,59 @@ TIER = [
     "Cộng đồng chốt đơn!",
 ]
 
+
 def vn_num(n):
     return f"{n:,}".replace(",", ".")
+
 
 def spoken(repo):
     return repo.split("/")[-1].replace("-", " ").replace("_", " ")
 
+
 def ssml_wrap(inner):
-    return (f'<speak version="1.0" xmlns="http://www.w3.org/2001/10/synthesis" '
-            f'xml:lang="vi-VN"><voice name="{VOICE}">{inner}</voice></speak>')
+    return (
+        f'<speak version="1.0" xmlns="http://www.w3.org/2001/10/synthesis" '
+        f'xml:lang="vi-VN"><voice name="{VOICE}">{inner}</voice></speak>'
+    )
+
 
 def build_lines():
     weekly, _ = brief.monday_github_trending()
-    lines = [{"key": "hook", "rate": "+8%",
-              "text": "Top mười GitHub tuần này! Mười repo được thả sao nhiều nhất... số liệu thật!"}]
+    lines = [
+        {
+            "key": "hook",
+            "rate": "+8%",
+            "text": "Top mười GitHub tuần này! Mười repo được thả sao nhiều nhất... số liệu thật!",
+        }
+    ]
     for i, r in enumerate(weekly[:10], 1):
         repo = re.sub(r"[^\x20-\uFFFF]", "", r["repo"])
         gain = int(re.search(r"([\d,]+)", r.get("gained", "0")).group(1).replace(",", ""))
         tier = TIER[(i - 1) % len(TIER)]
-        lines.append({
-            "key": f"repo{i}", "rank": i, "repo": repo, "rate": "-3%",
-            "text": f"Hạng {i}, {spoken(repo)}... tăng {vn_num(gain)} sao trong một tuần... {tier}",
-        })
-    lines.append({"key": "cta", "rate": "+0%",
-                  "text": "Repo nào đáng cài nhất? Lưu lại, follow để nhận tin AI mỗi ngày!"})
+        lines.append(
+            {
+                "key": f"repo{i}",
+                "rank": i,
+                "repo": repo,
+                "rate": "-3%",
+                "text": f"Hạng {i}, {spoken(repo)}... tăng {vn_num(gain)} sao trong một tuần... {tier}",
+            }
+        )
+    lines.append(
+        {
+            "key": "cta",
+            "rate": "+0%",
+            "text": "Repo nào đáng cài nhất? Lưu lại, follow để nhận tin AI mỗi ngày!",
+        }
+    )
     return lines
+
 
 async def synth_one(text, rate, mp3):
     import edge_tts
+
     await edge_tts.Communicate(text, VOICE, rate=rate).save(mp3)
+
 
 def duration(mp3):
     p = subprocess.run([FF, "-i", mp3], capture_output=True, text=True)
@@ -60,6 +85,7 @@ def duration(mp3):
     if not m:
         return None
     return int(m.group(1)) * 3600 + int(m.group(2)) * 60 + float(m.group(3))
+
 
 async def main():
     os.makedirs(TMP, exist_ok=True)
@@ -81,6 +107,7 @@ async def main():
     for ln in lines:
         ln.pop("ssml", None)
     json.dump(lines, open(OUT_JSON, "w", encoding="utf-8"), ensure_ascii=False, indent=1)
-    print("WROTE", OUT_JSON, "total:", round(sum(l["dur"] for l in lines), 1), "s")
+    print("WROTE", OUT_JSON, "total:", round(sum(it["dur"] for it in lines), 1), "s")
+
 
 asyncio.run(main())

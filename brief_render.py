@@ -1,6 +1,8 @@
 """brief_render.py - pure render helpers for brief.py (md + html). Stdlib only."""
+
 import html
 import re
+
 
 def clean_html(s, limit=220):
     s = html.unescape(s or "")
@@ -12,11 +14,14 @@ def clean_html(s, limit=220):
         return ""
     return s[:limit] + ("..." if len(s) > limit else "")
 
+
 def takeaway_for(title, summary):
     t = (title + " " + summary).lower()
     if any(k in t for k in ["agent", "claude", "chatgpt", "llm", "ai ", "ai-", "model"]):
         return "Why it matters: agents are moving into real workflows - test on a copy first, don't hand over payments/keys."
-    if any(k in t for k in ["nasa", "space", "mars", "moon", "telescope", "orbit", "asteroid", "comet"]):
+    if any(
+        k in t for k in ["nasa", "space", "mars", "moon", "telescope", "orbit", "asteroid", "comet"]
+    ):
         return "Why it matters: space ops feed timelines - pretty pictures aside, watch launch/mission dates."
     if any(k in t for k in ["cancer", "drug", "health", "clinical", "vaccine", "brain"]):
         return "Why it matters: health headlines need human trials - mice/cells only means years away, don't act medically on it."
@@ -25,6 +30,7 @@ def takeaway_for(title, summary):
     if any(k in t for k in ["climate", "ice", "ocean", "carbon", "fossil", "permafrost"]):
         return "Why it matters: single records aren't trends - look for multi-year data before conclusions."
     return "Why it matters: new tool/idea - try the smallest demo before adopting."
+
 
 def verdict_for_repo(repo, desc):
     d = (repo + " " + desc).lower()
@@ -36,14 +42,20 @@ def verdict_for_repo(repo, desc):
         return "Hype check - interesting code, don't trust money claims; backtest yourself."
     return "Skim first - star spike may be demo-driven; check last commit + issues."
 
+
 DAILY_BOTTOM = "Bottom line: headlines are hints, not conclusions. For AI: use agents for research, keep payments/keys manual. For science: mice/single papers need replication. For space: dates matter more than photos."
 
 MONDAY_BOTTOM = "Bottom line: weekly gain = interest, not audit. Before install: license, last commit date, open issues, tests. Star spikes on demos fade; painkillers (browser sharing, diagrams, science skills) stick."
 
+
 def tldr_picks(feeds):
     """First item of each feed = top pick (skip failed feeds). Shared by md + html."""
-    return [(n, items[0]) for n, items in feeds.items()
-            if items and not items[0][0].startswith("RSS failed")][:3]
+    return [
+        (n, items[0])
+        for n, items in feeds.items()
+        if items and not items[0][0].startswith("RSS failed")
+    ][:3]
+
 
 def render_monday_md(date_str, weekly, new_hot):
     L = []
@@ -55,11 +67,15 @@ def render_monday_md(date_str, weekly, new_hot):
     L.append("## TL;DR - my take")
     if weekly:
         for i, r in enumerate(weekly[:3], 1):
-            L.append(f"- #{i} {r['repo']} ({r['gained']}) - {verdict_for_repo(r['repo'], r['desc'])}")
+            L.append(
+                f"- #{i} {r['repo']} ({r['gained']}) - {verdict_for_repo(r['repo'], r['desc'])}"
+            )
     else:
         L.append("- Weekly tracker empty today - using new-hot below as fallback.")
         for h in new_hot[:3]:
-            L.append(f"- {h['repo']} ({h.get('stars')} stars) - {verdict_for_repo(h['repo'], h['desc'])}")
+            L.append(
+                f"- {h['repo']} ({h.get('stars')} stars) - {verdict_for_repo(h['repo'], h['desc'])}"
+            )
     L.append("")
     for i, r in enumerate(weekly, 1):
         L.append(f"## {i}. {r['repo']} ({r['gained']} this week, {r['total']} total)")
@@ -76,6 +92,7 @@ def render_monday_md(date_str, weekly, new_hot):
     L.append(MONDAY_BOTTOM)
     return "\n".join(L)
 
+
 def render_daily_md(date_str, feeds):
     L = []
     L.append(f"# Coffee brief - AI / Tech / Science - {date_str} (10 min)")
@@ -85,29 +102,33 @@ def render_daily_md(date_str, feeds):
     picks = tldr_picks(feeds)
     if not picks:
         L.append("- All feeds failed today - see sections below, or rerun later.")
-    for name, (t, l, s, p) in picks:
+    for name, (t, link, s, _p) in picks:
         L.append(f"- [{name}] {t}")
         if s:
             L.append(f"  In short: {s}")
-        L.append(f"  {l}")
+        L.append(f"  {link}")
     L.append("")
     for name, items in feeds.items():
         L.append(f"## {name}")
-        for t, l, s, p in items:
+        for t, link, s, p in items:
             L.append(f"- {t}" + (f" ({p})" if p else ""))
             if s:
                 L.append(f"  Summary: {s}")
                 L.append(f"  {takeaway_for(t, s)}")
             else:
-                L.append(f"  Note: discussion thread, no article summary - skim comments for lived experience.")
+                L.append(
+                    "  Note: discussion thread, no article summary - skim comments for lived experience."
+                )
                 L.append(f"  {takeaway_for(t, '')}")
-            L.append(f"  Link: {l}")
+            L.append(f"  Link: {link}")
         L.append("")
     L.append(DAILY_BOTTOM)
     return "\n".join(L)
 
+
 def esc(s):
     return html.escape(s or "", quote=True)
+
 
 def html_shell(title, body_inner):
     return f"""<!doctype html>
@@ -231,71 +252,99 @@ document.addEventListener('DOMContentLoaded',function(){{try{{if(window.matchMed
 </body>
 </html>"""
 
+
 def render_daily_html(date_str, feeds):
     tldr = ['<div class="tldr"><h2>TL;DR &mdash; 3 to read first</h2>']
     picks = tldr_picks(feeds)
     if not picks:
-        tldr.append('<div class="card muted">All feeds failed today &mdash; see sections below, or rerun later.</div>')
-    for name, (t, l, s, p) in picks:
-        tldr.append(f'<div class="card"><span class="badge">{esc(name)}</span>'
-                    f'<a href="{esc(l)}"><b>{esc(t)}</b></a>'
-                    + (f'<div class="muted">{esc(s)}</div>' if s else '') + '</div>')
-    tldr.append('</div>')
-    secs = [f"<h1>Coffee brief &mdash; AI / Tech / Science &mdash; {esc(date_str)} (10 min)</h1>",
-            "<div class='muted'>Same content as .md + Gmail draft.</div>"] + tldr
+        tldr.append(
+            '<div class="card muted">All feeds failed today &mdash; see sections below, or rerun later.</div>'
+        )
+    for name, (t, link, s, _p) in picks:
+        tldr.append(
+            f'<div class="card"><span class="badge">{esc(name)}</span>'
+            f'<a href="{esc(link)}"><b>{esc(t)}</b></a>'
+            + (f'<div class="muted">{esc(s)}</div>' if s else "")
+            + "</div>"
+        )
+    tldr.append("</div>")
+    secs = [
+        f"<h1>Coffee brief &mdash; AI / Tech / Science &mdash; {esc(date_str)} (10 min)</h1>",
+        "<div class='muted'>Same content as .md + Gmail draft.</div>",
+    ] + tldr
     for name, items in feeds.items():
         secs.append(f'<div class="sec"><h2>{esc(name)}</h2><div class="grid2">')
-        for t, l, s, p in items:
+        for t, link, s, p in items:
             if s:
                 inner = f'<div class="muted">{esc(s)}</div><div class="muted">{esc(takeaway_for(t, s))}</div>'
             else:
                 inner = f'<div class="muted">Discussion thread, no summary &mdash; skim comments.</div><div class="muted">{esc(takeaway_for(t, ""))}</div>'
-            secs.append(f'<div class="card"><a href="{esc(l)}"><b>{esc(t)}</b></a>'
-                        + (f' <span class="muted">({esc(p)})</span>' if p else '')
-                        + f'<br>{inner}<br><a href="{esc(l)}">{esc(l)}</a></div>')
-        secs.append('</div></div>')
+            secs.append(
+                f'<div class="card"><a href="{esc(link)}"><b>{esc(t)}</b></a>'
+                + (f' <span class="muted">({esc(p)})</span>' if p else "")
+                + f'<br>{inner}<br><a href="{esc(link)}">{esc(link)}</a></div>'
+            )
+        secs.append("</div></div>")
     secs.append(f'<div class="card muted">{esc(DAILY_BOTTOM)}</div>')
     return html_shell(f"Coffee brief - {date_str}", "\n".join(secs))
+
 
 def render_monday_html(date_str, weekly, new_hot):
     tldr = ['<div class="tldr"><h2>TL;DR &mdash; my take</h2>']
     if weekly:
         for i, r in enumerate(weekly[:3], 1):
-            tldr.append(f'<div class="card"><span class="badge">#{i} {esc(r["repo"])}</span> '
-                        f'<span class="badge">{esc(r["gained"])}</span>'
-                        f'<div class="muted">{esc(verdict_for_repo(r["repo"], r["desc"]))}</div></div>')
+            tldr.append(
+                f'<div class="card"><span class="badge">#{i} {esc(r["repo"])}</span> '
+                f'<span class="badge">{esc(r["gained"])}</span>'
+                f'<div class="muted">{esc(verdict_for_repo(r["repo"], r["desc"]))}</div></div>'
+            )
     else:
         for h in new_hot[:3]:
-            tldr.append(f'<div class="card"><b>{esc(h["repo"])}</b><div class="muted">{esc(verdict_for_repo(h["repo"], h["desc"]))}</div></div>')
-    tldr.append('</div>')
-    secs = [f"<h1>Monday GitHub Trending &mdash; weekly gain &mdash; {esc(date_str)}</h1>",
-            "<div class='muted'>Top 10 by stars GAINED last week. Read the verdict, not just the stars. "
-            "<a href='https://github.com/trending?since=weekly'>Verify live</a></div>"] + tldr
+            tldr.append(
+                f'<div class="card"><b>{esc(h["repo"])}</b><div class="muted">{esc(verdict_for_repo(h["repo"], h["desc"]))}</div></div>'
+            )
+    tldr.append("</div>")
+    secs = [
+        f"<h1>Monday GitHub Trending &mdash; weekly gain &mdash; {esc(date_str)}</h1>",
+        "<div class='muted'>Top 10 by stars GAINED last week. Read the verdict, not just the stars. "
+        "<a href='https://github.com/trending?since=weekly'>Verify live</a></div>",
+    ] + tldr
     secs.append('<div class="sec"><h2>Top 10 weekly gain</h2><div class="grid2">')
     for i, r in enumerate(weekly, 1):
-        secs.append(f'<div class="card"><span class="badge">#{i}</span>'
-                    f'<a href="{esc(r["url"])}"><b>{esc(r["repo"])}</b></a> '
-                    f'<span class="badge">{esc(r["gained"])} / {esc(r["total"])} total</span>'
-                    f'<div class="muted">{esc(r["desc"])}</div>'
-                    f'<div class="muted">Verdict: {esc(verdict_for_repo(r["repo"], r["desc"]))}</div></div>')
-    secs.append('</div></div>')
+        secs.append(
+            f'<div class="card"><span class="badge">#{i}</span>'
+            f'<a href="{esc(r["url"])}"><b>{esc(r["repo"])}</b></a> '
+            f'<span class="badge">{esc(r["gained"])} / {esc(r["total"])} total</span>'
+            f'<div class="muted">{esc(r["desc"])}</div>'
+            f'<div class="muted">Verdict: {esc(verdict_for_repo(r["repo"], r["desc"]))}</div></div>'
+        )
+    secs.append("</div></div>")
     secs.append('<div class="sec"><h2>New hot (created last 14 days)</h2>')
     for h in new_hot:
-        secs.append(f'<div class="card"><a href="{esc(h["url"])}"><b>{esc(h["repo"])}</b></a> '
-                    f'<span class="badge">{esc(str(h.get("stars")))} stars</span>'
-                    f'<div class="muted">{esc(h["desc"])}</div>'
-                    f'<div class="muted">Verdict: {esc(verdict_for_repo(h["repo"], h["desc"]))}</div></div>')
-    secs.append('</div>')
+        secs.append(
+            f'<div class="card"><a href="{esc(h["url"])}"><b>{esc(h["repo"])}</b></a> '
+            f'<span class="badge">{esc(str(h.get("stars")))} stars</span>'
+            f'<div class="muted">{esc(h["desc"])}</div>'
+            f'<div class="muted">Verdict: {esc(verdict_for_repo(h["repo"], h["desc"]))}</div></div>'
+        )
+    secs.append("</div>")
     secs.append(f'<div class="card muted">{esc(MONDAY_BOTTOM)}</div>')
     return html_shell(f"Monday Trending - {date_str}", "\n".join(secs))
 
+
 def render_index_html(entries):
     # entries: list of (filename, label, date_str) sorted desc
-    rows = ['<h1>NEWS</h1>',
-            '<div class="tldr"><b>Latest</b> &mdash; start here, then browse below.</div>']
+    rows = [
+        "<h1>NEWS</h1>",
+        '<div class="tldr"><b>Latest</b> &mdash; start here, then browse below.</div>',
+    ]
     for fn, label, ds in entries:
-        rows.append(f'<div class="card"><a href="{esc(fn)}"><b>{esc(label)}</b></a> '
-                    f'<span class="badge">{esc(ds)}</span></div>')
+        rows.append(
+            f'<div class="card"><a href="{esc(fn)}"><b>{esc(label)}</b></a> '
+            f'<span class="badge">{esc(ds)}</span></div>'
+        )
     if not entries:
-        rows.append('<div class="card muted">No issues yet &mdash; run: python brief.py --mode daily</div>')
+        rows.append(
+            '<div class="card muted">No issues yet &mdash; run: python brief.py --mode daily</div>'
+        )
     return html_shell("Daily Brief - index", "\n".join(rows))

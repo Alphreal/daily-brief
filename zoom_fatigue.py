@@ -4,8 +4,10 @@ Outputs: zoom-fatigue-classroom.mp4 / .webm / .gif + docs/zoom-fatigue.html
 Stdlib + Pillow + numpy + imageio + imageio-ffmpeg (bundled ffmpeg binary).
 Run: python zoom_fatigue.py
 """
-import os
+
 import math
+import os
+
 import numpy as np
 from PIL import Image, ImageDraw, ImageFont
 
@@ -19,26 +21,58 @@ N = int(FPS * DUR)  # 192
 
 NAMES = ["Mai", "Leo", "Ava", "Ben", "Ms. An", "Sam", "Nora", "Kai", "Linh"]
 IS_TEACHER = [False, False, False, False, True, False, False, False, False]
-TILE_BG = ["#DBEAFE", "#FEF3C7", "#DCFCE7", "#FFE4E6", "#FFF7ED",
-           "#FFEDD5", "#CCFBF1", "#F3E8FF", "#E0F2FE"]
-SKIN = ["#FFDBB4", "#F1C27D", "#E0AC69", "#FFEDD5", "#F1C27D",
-        "#C68642", "#FFDBB4", "#8D5524", "#E0AC69"]
-HAIR = ["#1F2937", "#4B5563", "#111827", "#6B7280", "#78350F",
-        "#1F2937", "#374151", "#111827", "#4B5563"]
+TILE_BG = [
+    "#DBEAFE",
+    "#FEF3C7",
+    "#DCFCE7",
+    "#FFE4E6",
+    "#FFF7ED",
+    "#FFEDD5",
+    "#CCFBF1",
+    "#F3E8FF",
+    "#E0F2FE",
+]
+SKIN = [
+    "#FFDBB4",
+    "#F1C27D",
+    "#E0AC69",
+    "#FFEDD5",
+    "#F1C27D",
+    "#C68642",
+    "#FFDBB4",
+    "#8D5524",
+    "#E0AC69",
+]
+HAIR = [
+    "#1F2937",
+    "#4B5563",
+    "#111827",
+    "#6B7280",
+    "#78350F",
+    "#1F2937",
+    "#374151",
+    "#111827",
+    "#4B5563",
+]
+
 
 def hexcol(s):
     s = s.lstrip("#")
     return (int(s[0:2], 16), int(s[2:4], 16), int(s[4:6], 16))
 
+
 def lerp(a, b, t):
     return int(a + (b - a) * t)
+
 
 def lerp_col(c1, c2, t):
     return (lerp(c1[0], c2[0], t), lerp(c1[1], c2[1], t), lerp(c1[2], c2[2], t))
 
+
 def smooth(x):
     x = max(0.0, min(1.0, x))
     return x * x * (3 - 2 * x)
+
 
 def fatigue_at(t):
     if t < 0.20:
@@ -49,11 +83,13 @@ def fatigue_at(t):
         return 1.0
     return 1.0 - smooth((t - 0.78) / 0.22)
 
+
 def font(sz):
     try:
         return ImageFont.load_default(size=sz)
     except TypeError:
         return ImageFont.load_default()
+
 
 F_TITLE = font(34)
 F_SUB = font(22)
@@ -63,14 +99,18 @@ F_BIG = font(30)
 F_BANNER = font(28)
 F_ZZZ = font(26)
 
+
 def text_center(d, cx, y, s, fnt, fill):
     bb = d.textbbox((0, 0), s, font=fnt)
     tw = bb[2] - bb[0]
     d.text((cx - tw / 2, y), s, font=fnt, fill=fill)
 
+
 def draw_battery(d, x, y, w, h, pct):
     # pct 0..100
-    d.rounded_rectangle([x, y, x + w, y + h], radius=6, outline=(60, 60, 60), width=2, fill=(255, 255, 255))
+    d.rounded_rectangle(
+        [x, y, x + w, y + h], radius=6, outline=(60, 60, 60), width=2, fill=(255, 255, 255)
+    )
     d.rectangle([x + w + 2, y + h * 0.3, x + w + 8, y + h * 0.7], fill=(60, 60, 60))
     inner_w = int((w - 8) * pct / 100)
     if pct > 50:
@@ -82,6 +122,7 @@ def draw_battery(d, x, y, w, h, pct):
     if inner_w > 0:
         d.rounded_rectangle([x + 4, y + 4, x + 4 + inner_w, y + h - 4], radius=4, fill=col)
 
+
 def draw_face(d, cx, cy, r, skin, hair_c, f, seed):
     # hair back
     d.ellipse([cx - r - 6, cy - r - 10, cx + r + 6, cy + r + 4], fill=hair_c)
@@ -89,7 +130,9 @@ def draw_face(d, cx, cy, r, skin, hair_c, f, seed):
     cy2 = cy + droop
     d.ellipse([cx - r, cy2 - r, cx + r, cy2 + r], fill=skin)
     # hair top arc
-    d.arc([cx - r - 6, cy - r - 14, cx + r + 6, cy2 + 10], start=200, end=340, fill=hair_c, width=10)
+    d.arc(
+        [cx - r - 6, cy - r - 14, cx + r + 6, cy2 + 10], start=200, end=340, fill=hair_c, width=10
+    )
     # eyes
     eo = 18 * (1 - f * 0.72)  # openness height
     eo = max(4, eo)
@@ -97,7 +140,12 @@ def draw_face(d, cx, cy, r, skin, hair_c, f, seed):
     ey = cy2 - 4
     for sx in (-1, 1):
         exx = cx + sx * ex
-        d.ellipse([exx - 11, ey - eo / 2, exx + 11, ey + eo / 2], fill=(255, 255, 255), outline=(30, 30, 30), width=2)
+        d.ellipse(
+            [exx - 11, ey - eo / 2, exx + 11, ey + eo / 2],
+            fill=(255, 255, 255),
+            outline=(30, 30, 30),
+            width=2,
+        )
         pr = 5 if f < 0.6 else 4
         # pupils look down more when tired
         py = ey + f * 3
@@ -115,23 +163,42 @@ def draw_face(d, cx, cy, r, skin, hair_c, f, seed):
     elif f < 0.7:
         d.line([mx0 + 3, my0 + 6, mx0 + mw - 3, my0 + 6], fill=(30, 30, 30), width=3)
     else:
-        d.arc([mx0, my0 - 2, mx0 + mw, my0 + mh + 6], start=195, end=345, fill=(30, 30, 30), width=3)
+        d.arc(
+            [mx0, my0 - 2, mx0 + mw, my0 + mh + 6], start=195, end=345, fill=(30, 30, 30), width=3
+        )
     # cheeks fade when tired
     if f < 0.5:
         blush = (252, 165, 165)
         d.ellipse([cx - r + 4, cy2 + 8, cx - r + 16, cy2 + 16], fill=blush)
         d.ellipse([cx + r - 16, cy2 + 8, cx + r - 4, cy2 + 16], fill=blush)
 
+
 def phase_info(t):
     if t < 0.20:
         return ("Hour 1 - Fresh & focused", "9 cameras on - eyes bright", "#FFFFFF", "#111827")
     if t < 0.45:
-        return ("Hour 3 - Eyes tired, focus slips", "staring - blinking less - fidgeting", "#FEF3C7", "#92400E")
+        return (
+            "Hour 3 - Eyes tired, focus slips",
+            "staring - blinking less - fidgeting",
+            "#FEF3C7",
+            "#92400E",
+        )
     if t < 0.78:
-        return ("Hour 5 - Drained: cameras off", "brain fog - eye strain - quiet class", "#FEE2E2", "#991B1B")
+        return (
+            "Hour 5 - Drained: cameras off",
+            "brain fog - eye strain - quiet class",
+            "#FEE2E2",
+            "#991B1B",
+        )
     if t < 0.92:
-        return ("Fix: 20-20-20 - stretch - water", "every 20 min look 20 ft away - stand - cameras can rest", "#DCFCE7", "#166534")
+        return (
+            "Fix: 20-20-20 - stretch - water",
+            "every 20 min look 20 ft away - stand - cameras can rest",
+            "#DCFCE7",
+            "#166534",
+        )
     return ("Hour 1 - Fresh & focused", "loop - replay for your class", "#FFFFFF", "#111827")
+
 
 def render_frame(i):
     t = i / N
@@ -143,7 +210,9 @@ def render_frame(i):
     d.rectangle([0, 0, W, 86], fill=(255, 255, 255))
     d.line([0, 86, W, 86], fill=(231, 229, 228), width=2)
     d.text((48, 14), "Zoom Fatigue - Classroom Edition", font=F_TITLE, fill=(17, 24, 39))
-    d.text((48, 50), "Why long video classes drain you + what helps", font=F_SUB, fill=(107, 114, 128))
+    d.text(
+        (48, 50), "Why long video classes drain you + what helps", font=F_SUB, fill=(107, 114, 128)
+    )
     # clock
     mins = int(9 * 60 + t * 360)
     if t > 0.92:
@@ -183,7 +252,6 @@ def render_frame(i):
         else:
             base = hexcol(TILE_BG[idx])
             # desaturate toward gray with fatigue
-            gray = sum(base) // 3
             bg = lerp_col(base, (226, 232, 240), f * 0.55)
             border = (22, 163, 74) if IS_TEACHER[idx] else (231, 229, 228)
             bw = 3 if IS_TEACHER[idx] else 2
@@ -220,12 +288,17 @@ def render_frame(i):
     title, sub, bg_hex, fg_hex = phase_info(t)
     bg = hexcol(bg_hex)
     fg = hexcol(fg_hex)
-    d.rounded_rectangle([mx, bann_y0, W - mx, bann_y1], radius=14, fill=bg, outline=(231, 229, 228), width=2)
+    d.rounded_rectangle(
+        [mx, bann_y0, W - mx, bann_y1], radius=14, fill=bg, outline=(231, 229, 228), width=2
+    )
     # left accent dot pulses during fix
     if 0.78 <= t < 0.92:
         pulse = 0.6 + 0.4 * math.sin(i * 0.35)
         r = int(8 + 3 * pulse)
-        d.ellipse([mx + 22 - r, (bann_y0 + bann_y1) / 2 - r, mx + 22 + r, (bann_y0 + bann_y1) / 2 + r], fill=(22, 163, 74))
+        d.ellipse(
+            [mx + 22 - r, (bann_y0 + bann_y1) / 2 - r, mx + 22 + r, (bann_y0 + bann_y1) / 2 + r],
+            fill=(22, 163, 74),
+        )
         tx = mx + 44
     else:
         tx = mx + 22
@@ -236,11 +309,14 @@ def render_frame(i):
     d.rectangle([0, H - 6, W * (i + 1) / N, H], fill=(15, 98, 254))
     return np.asarray(img)
 
+
 def seed_phase(idx):
     return idx * 1.7
 
+
 def main():
     import imageio.v2 as iio
+
     mp4_path = os.path.join(BASE, "zoom-fatigue-classroom.mp4")
     webm_path = os.path.join(BASE, "zoom-fatigue-classroom.webm")
     gif_path = os.path.join(BASE, "zoom-fatigue-classroom.gif")
@@ -249,29 +325,43 @@ def main():
     for i in range(N):
         frames.append(render_frame(i))
         if (i + 1) % 48 == 0:
-            print(f"  {i+1}/{N}")
+            print(f"  {i + 1}/{N}")
     frames_np = frames  # list of HxWx3 uint8
     print("Writing mp4...")
-    w = iio.get_writer(mp4_path, fps=FPS, codec="libx264", quality=8,
-                       ffmpeg_params=["-pix_fmt", "yuv420p", "-movflags", "faststart"])
+    w = iio.get_writer(
+        mp4_path,
+        fps=FPS,
+        codec="libx264",
+        quality=8,
+        ffmpeg_params=["-pix_fmt", "yuv420p", "-movflags", "faststart"],
+    )
     for fr in frames_np:
         w.append_data(fr)
     w.close()
     print("Writing webm...")
-    w2 = iio.get_writer(webm_path, fps=FPS, codec="libvpx-vp9", quality=8,
-                        ffmpeg_params=["-pix_fmt", "yuv420p", "-b:v", "1M"])
+    w2 = iio.get_writer(
+        webm_path,
+        fps=FPS,
+        codec="libvpx-vp9",
+        quality=8,
+        ffmpeg_params=["-pix_fmt", "yuv420p", "-b:v", "1M"],
+    )
     for fr in frames_np:
         w2.append_data(fr)
     w2.close()
     print("Writing gif (640x360, 12fps)...")
     small = [Image.fromarray(fr[::2]).resize((640, 360), Image.BILINEAR) for fr in frames_np[::2]]
-    small[0].save(gif_path, save_all=True, append_images=small[1:], duration=83, loop=0, optimize=True)
+    small[0].save(
+        gif_path, save_all=True, append_images=small[1:], duration=83, loop=0, optimize=True
+    )
     for p in (mp4_path, webm_path, gif_path):
-        print(f"Saved: {p} ({os.path.getsize(p)//1024} KB)")
+        print(f"Saved: {p} ({os.path.getsize(p) // 1024} KB)")
     write_html_preview(mp4_path, webm_path, gif_path)
+
 
 def write_html_preview(mp4_path, webm_path, gif_path):
     import shutil
+
     os.makedirs(DOCS, exist_ok=True)
     for p in (mp4_path, webm_path, gif_path):
         try:
@@ -329,6 +419,7 @@ Sorry, your browser cannot play video. See the GIF below.
     with open(out, "w", encoding="utf-8") as f:
         f.write(html)
     print("Saved:", out)
+
 
 if __name__ == "__main__":
     main()

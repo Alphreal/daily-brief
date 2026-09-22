@@ -3,10 +3,12 @@
 Shots -> TMP/shots/{i}_{k}.png, strips -> TMP/strip_{i}.png (stacked, 650px step).
 Falls back to banner art in render if a strip is missing.
 """
+
 import json
 import os
 import subprocess
 import time
+
 from PIL import Image
 
 BSK = r"C:\Users\ADMIN\.local\bin\bsk.exe"
@@ -14,13 +16,15 @@ TMP = r"C:\Users\ADMIN\AppData\Local\Temp\opencode\ttv4"
 SHOTS = 6
 STEP = 650
 
+
 def run(*args):
     p = subprocess.run([BSK] + list(args), capture_output=True, text=True, timeout=120)
     return p.returncode, (p.stdout or "").strip()
 
+
 def main():
     nar = json.load(open(os.path.join(TMP, "narration.json"), encoding="utf-8"))
-    repos = [(l["rank"], l["repo"]) for l in nar if l["key"].startswith("repo")]
+    repos = [(r["rank"], r["repo"]) for r in nar if r["key"].startswith("repo")]
     os.makedirs(os.path.join(TMP, "shots"), exist_ok=True)
     rc, out = run("session", "start", "--json", "--no-focus", "--width", "500", "--height", "1200")
     if rc != 0:
@@ -59,5 +63,6 @@ def main():
     finally:
         run("session", "stop", sid)
         print("session stopped")
+
 
 main()

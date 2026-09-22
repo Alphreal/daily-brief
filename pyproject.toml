@@ -1,0 +1,14 @@
+[tool.ruff]
+line-length = 100
+target-version = "py311"
+exclude = [".opencode", "docs"]
+
+[tool.ruff.lint]
+# E501 (line length) deliberately off: ruff's own default set excludes it.
+# Layout is enforced by `ruff format` (line-length 100); strings/URLs/templates
+# are content, not code. Bug-finding rules (F, B) stay on.
+select = ["E", "F", "B", "I"]
+ignore = ["E501"]
+
+[tool.ruff.format]
+quote-style = "double"

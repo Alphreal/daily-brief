@@ -2,12 +2,15 @@
 """V4: scrolled real-page B-roll + expressive VN narration + synced karaoke.
 Run: python tiktok_github_v4.py  (needs ttv4/narration.json + strip_{i}.png)
 """
+
 import json
 import os
 import re
 import subprocess
-from PIL import Image, ImageDraw
+
 import numpy as np
+from PIL import Image, ImageDraw
+
 import tiktok_github_v2 as V
 import tiktok_github_v3 as T3
 
@@ -18,9 +21,11 @@ FF = r"C:\Users\ADMIN\AppData\Roaming\Python\Python311\site-packages\imageio_ffm
 W, H, FPS = V.W, V.H, V.FPS
 CARD_DUR, TAIL, TOTAL_CH = 2.0, 0.7, 12
 
+
 def fresh_by_repo():
     items, _ = V.load_items()
     return {it["repo"]: it for it in items}
+
 
 def load_sched():
     nar = json.load(open(os.path.join(TMP, "narration.json"), encoding="utf-8"))
@@ -36,16 +41,24 @@ def load_sched():
             gain_int = int(gain_txt.replace(".", ""))
         except Exception:
             gain_int = 0
-        repos.append({
-            "rank": ln["rank"], "repo": ln["repo"],
-            "short": ln["repo"].split("/")[-1][:22],
-            "gain": gain_txt, "gain_int": gain_int, "total": fr.get("total", "..."),
-            "desc": fr.get("desc", ""), "text": ln["text"],
-            "mp3": ln.get("mp3"), "dur": ln["dur"],
-        })
-    hook = [l for l in nar if l["key"] == "hook"][0]
-    cta = [l for l in nar if l["key"] == "cta"][0]
+        repos.append(
+            {
+                "rank": ln["rank"],
+                "repo": ln["repo"],
+                "short": ln["repo"].split("/")[-1][:22],
+                "gain": gain_txt,
+                "gain_int": gain_int,
+                "total": fr.get("total", "..."),
+                "desc": fr.get("desc", ""),
+                "text": ln["text"],
+                "mp3": ln.get("mp3"),
+                "dur": ln["dur"],
+            }
+        )
+    hook = [row for row in nar if row["key"] == "hook"][0]
+    cta = [row for row in nar if row["key"] == "cta"][0]
     return hook, repos, cta
+
 
 def draw_scroll(strip, repo, words, ch, elapsed, dur):
     p = max(0.0, min(1.0, elapsed / dur if dur else 1.0))
@@ -64,9 +77,12 @@ def draw_scroll(strip, repo, words, ch, elapsed, dur):
     V.draw_karaoke(d, [words], V.F_CAP, W / 2, 950, min(0.99, p / 2.4))
     return frame
 
+
 def main():
-    import imageio.v2 as iio
     import shutil
+
+    import imageio.v2 as iio
+
     V.GLOW = V.make_glow()
     hook, repos, cta = load_sched()
     print(f"Repos: {len(repos)}")
@@ -89,7 +105,7 @@ def main():
     print(f"Video: {round(total_dur, 1)}s, {N} frames")
     ch_of = {}
     ch = 1
-    for idx, (kind, pay, dur) in enumerate(segs):
+    for idx, (kind, _pay, _dur) in enumerate(segs):
         if kind == "hook":
             ch_of[idx] = 1
         elif kind == "cta":
@@ -99,8 +115,9 @@ def main():
                 ch += 1
             ch_of[idx] = ch
     silent = os.path.join(BASE, "tiktok-github-v4-silent.mp4")
-    w = iio.get_writer(silent, fps=FPS, codec="libx264", quality=8,
-                       ffmpeg_params=["-pix_fmt", "yuv420p"])
+    w = iio.get_writer(
+        silent, fps=FPS, codec="libx264", quality=8, ffmpeg_params=["-pix_fmt", "yuv420p"]
+    )
     fr = 0
     cover_saved = False
     for idx, (kind, pay, dur) in enumerate(segs):
@@ -112,14 +129,24 @@ def main():
                 img = V.GLOW.copy()
                 d = ImageDraw.Draw(img, "RGBA")
                 V.draw_hook(d, min(1.0, lt / dur))
-                hw = pay["text"].split()
                 out = img
             elif kind == "card":
                 img = V.GLOW.copy()
                 d = ImageDraw.Draw(img, "RGBA")
-                V.draw_card(d, {"rank": pay["rank"], "gain_s": f"+{pay['gain']}",
-                                "short": pay["short"], "gain": pay["gain_int"], "total": pay["total"],
-                                "desc": pay["desc"]}, chn, TOTAL_CH, min(1.0, lt / dur))
+                V.draw_card(
+                    d,
+                    {
+                        "rank": pay["rank"],
+                        "gain_s": f"+{pay['gain']}",
+                        "short": pay["short"],
+                        "gain": pay["gain_int"],
+                        "total": pay["total"],
+                        "desc": pay["desc"],
+                    },
+                    chn,
+                    TOTAL_CH,
+                    min(1.0, lt / dur),
+                )
                 out = img
             elif kind == "roll":
                 words = T3.cap_words(pay, pay["text"], pay["gain"])
@@ -128,9 +155,17 @@ def main():
                 img = V.GLOW.copy()
                 d = ImageDraw.Draw(img, "RGBA")
                 tops = sorted(repos, key=lambda r: r["rank"])[:3]
-                V.draw_cta(d, [{"rank": t["rank"], "short": t["short"],
-                                "gain": int(t["gain"].replace(".", "")) if t["gain"] != "?" else 0}
-                               for t in tops])
+                V.draw_cta(
+                    d,
+                    [
+                        {
+                            "rank": t["rank"],
+                            "short": t["short"],
+                            "gain": int(t["gain"].replace(".", "")) if t["gain"] != "?" else 0,
+                        }
+                        for t in tops
+                    ],
+                )
                 out = img
             if not cover_saved and fr / FPS > 1.0:
                 out.save(os.path.join(BASE, "tiktok-github-v4-cover.png"))
@@ -142,12 +177,28 @@ def main():
     # --- audio: hook + [sil2.0 + line + tail] + cta, then loudnorm master
     lst = os.path.join(TMP, "concat4.txt")
     sidx = 0
+
     def silence(dur, tag):
         pth = os.path.join(TMP, f"s4_{tag}.mp3")
         if not os.path.exists(pth):
-            subprocess.run([FF, "-y", "-f", "lavfi", "-i", "anullsrc=r=24000:cl=mono",
-                            "-t", str(round(dur, 2)), "-q:a", "4", pth], capture_output=True)
+            subprocess.run(
+                [
+                    FF,
+                    "-y",
+                    "-f",
+                    "lavfi",
+                    "-i",
+                    "anullsrc=r=24000:cl=mono",
+                    "-t",
+                    str(round(dur, 2)),
+                    "-q:a",
+                    "4",
+                    pth,
+                ],
+                capture_output=True,
+            )
         return pth
+
     with open(lst, "w", encoding="utf-8") as f:
         for kind, pay, dur in segs:
             if kind == "hook":
@@ -166,18 +217,34 @@ def main():
                     f.write(f"file '{silence(dur - pay['dur'], f'e{sidx}')}'\n")
             sidx += 1
     raw = os.path.join(TMP, "narration4_raw.mp3")
-    subprocess.run([FF, "-y", "-f", "concat", "-safe", "0", "-i", lst, "-c", "copy", raw],
-                   capture_output=True)
+    subprocess.run(
+        [FF, "-y", "-f", "concat", "-safe", "0", "-i", lst, "-c", "copy", raw], capture_output=True
+    )
     master = os.path.join(TMP, "narration4_master.mp3")
-    subprocess.run([FF, "-y", "-i", raw, "-af", "loudnorm=I=-16:TP=-1.5:LRA=11,acompressor=threshold=-18dB:ratio=3:attack=8:release=120",
-                    "-ar", "24000", master], capture_output=True)
+    subprocess.run(
+        [
+            FF,
+            "-y",
+            "-i",
+            raw,
+            "-af",
+            "loudnorm=I=-16:TP=-1.5:LRA=11,acompressor=threshold=-18dB:ratio=3:attack=8:release=120",
+            "-ar",
+            "24000",
+            master,
+        ],
+        capture_output=True,
+    )
     final = os.path.join(BASE, "tiktok-github-v4.mp4")
-    subprocess.run([FF, "-y", "-i", silent, "-i", master, "-c:v", "copy", "-c:a", "aac",
-                    "-shortest", final], capture_output=True)
+    subprocess.run(
+        [FF, "-y", "-i", silent, "-i", master, "-c:v", "copy", "-c:a", "aac", "-shortest", final],
+        capture_output=True,
+    )
     print(f"Saved: {final} ({os.path.getsize(final) // 1024} KB)")
     for f_ in ("tiktok-github-v4.mp4", "tiktok-github-v4-cover.png"):
         shutil.copy(os.path.join(BASE, f_), os.path.join(DOCS, f_))
     print("Copied to docs/")
+
 
 if __name__ == "__main__":
     main()

@@ -3,11 +3,13 @@
 Cinematic red-glow cards + real repo B-roll (Ken Burns) + karaoke captions.
 720x1280 @24fps. Run: python tiktok_github_v2.py
 """
+
 import os
 import re
-import io
 import urllib.request
-from PIL import Image, ImageDraw, ImageFont, ImageFilter
+
+from PIL import Image, ImageDraw, ImageFont
+
 import brief
 
 BASE = os.path.dirname(os.path.abspath(__file__))
@@ -28,8 +30,10 @@ GREEN = (63, 185, 80)
 F_DISP = r"C:\Windows\Fonts\tahomabd.ttf"
 F_BODY = r"C:\Windows\Fonts\tahoma.ttf"
 
+
 def font(path, sz):
     return ImageFont.truetype(path, sz)
+
 
 F_TITLE = font(F_DISP, 64)
 F_BIG = font(F_DISP, 96)
@@ -39,14 +43,16 @@ F_CAP = font(F_DISP, 34)
 F_SMALL = font(F_BODY, 24)
 F_EYE = font(F_DISP, 26)
 
+
 def safe(s):
     out = []
-    for ch in (s or ""):
+    for ch in s or "":
         o = ord(ch)
         if o > 0xFFFF or o < 32:
             continue
         out.append(ch)
     return "".join(out).strip()
+
 
 def wrap(d, text, fnt, max_w):
     lines, cur = [], ""
@@ -62,9 +68,11 @@ def wrap(d, text, fnt, max_w):
         lines.append(cur)
     return lines
 
+
 def center(d, cx, y, s, fnt, fill):
     bb = d.textbbox((0, 0), s, font=fnt)
     d.text((cx - (bb[2] - bb[0]) / 2, y), s, font=fnt, fill=fill)
+
 
 def fit_font(path, text, max_w, start):
     sz = start
@@ -76,17 +84,21 @@ def fit_font(path, text, max_w, start):
         sz -= 6
     return ImageFont.truetype(path, 20)
 
+
 def smooth(x):
     x = max(0.0, min(1.0, x))
     return x * x * (3 - 2 * x)
+
 
 def parse_gain(g):
     m = re.search(r"([\d,]+)", g or "")
     return int(m.group(1).replace(",", "")) if m else 0
 
+
 # ---------- backdrop ----------
 def make_glow():
     import math
+
     img = Image.new("RGB", (W, H), BLACK)
     px = img.load()
     cx, cy, rmax = W * 0.95, -H * 0.05, 900.0
@@ -103,17 +115,20 @@ def make_glow():
     d.rectangle([0, 0, 7, H], fill=(RED[0], RED[1], RED[2], 255))
     return img.convert("RGB")
 
+
 GLOW = None
 
+
 def glass_row(d, x0, y0, x1, y1, label, value, vcol=WHITE):
-    d.rounded_rectangle([x0, y0, x1, y1], radius=16, fill=PANEL,
-                        outline=BORDER, width=2)
+    d.rounded_rectangle([x0, y0, x1, y1], radius=16, fill=PANEL, outline=BORDER, width=2)
     d.text((x0 + 24, y0 + 18), label, font=F_TXT, fill=MUTED)
     bb = d.textbbox((0, 0), value, font=F_SUB)
     d.text((x1 - 24 - (bb[2] - bb[0]), y0 + 14), value, font=F_SUB, fill=vcol)
 
+
 def chapter_head(d, cur, total):
     d.text((36, 30), f"{cur:02d} / {total:02d}", font=F_SMALL, fill=MUTED)
+
 
 # ---------- karaoke ----------
 def layout_words(d, words, fnt, max_w, cx, y_top, lh):
@@ -140,6 +155,7 @@ def layout_words(d, words, fnt, max_w, cx, y_top, lh):
         y += lh
     return out, y - y_top
 
+
 def draw_karaoke(d, lines, fnt, cx, y_top, p, dwell=0.55):
     # lines: list of words-lists; reveal word-by-word, keywords red
     flat = []
@@ -148,19 +164,20 @@ def draw_karaoke(d, lines, fnt, cx, y_top, p, dwell=0.55):
         flat.append(None)
     total_w = sum(1 for w in flat if w)
     shown = int(p * total_w * 2.4) + 1 if p < 0.98 else total_w + 99
-    vis, y = [], y_top
     # layout full first for stability
     placed, _ = layout_words(d, [w for w in flat if w], fnt, W - 120, cx, y_top, 52)
     k = 0
-    for (x, yy, t, c) in placed:
+    for x, yy, t, c in placed:
         if k < shown:
             d.text((x, yy), t, font=fnt, fill=c)
         k += 1
+
 
 # ---------- assets ----------
 def fetch(url):
     req = urllib.request.Request(url, headers=UA)
     return urllib.request.urlopen(req, timeout=25).read()
+
 
 def repo_art(repo):
     """Return path to B-roll image (og:image, else owner avatar), or None."""
@@ -192,6 +209,7 @@ def repo_art(repo):
         print("  art-avatar fail", repo, str(e)[:80])
     return None
 
+
 def cover_crop(img, zw=900, zh=1600):
     c = img.convert("RGB")
     s = max(zw / c.width, zh / c.height)
@@ -199,6 +217,7 @@ def cover_crop(img, zw=900, zh=1600):
     x = (c.width - zw) // 2
     y = (c.height - zh) // 2
     return c.crop((x, y, x + zw, y + zh))
+
 
 # ---------- data ----------
 TIER_CAP = [
@@ -210,6 +229,7 @@ TIER_CAP = [
     ("Cộng đồng chốt đơn!", "chốt đơn"),
 ]
 
+
 def load_items():
     weekly, _ = brief.monday_github_trending()
     items, art = [], {}
@@ -220,20 +240,28 @@ def load_items():
         cap_kw = TIER_CAP[(i - 1) % len(TIER_CAP)]
         w1 = [(short, WHITE), (f"+{gain:,}".replace(",", ".") + " sao", RED)]
         w2 = [(w_, RED if cap_kw[1] in w_ else WHITE) for w_ in cap_kw[0].split()]
-        items.append({
-            "rank": i, "repo": repo, "short": short, "gain": gain,
-            "gain_s": safe(r.get("gained", "")), "total": safe(r.get("total", "")),
-            "desc": safe(r.get("desc", ""))[:120],
-            "cap": [w1, w2],
-        })
+        items.append(
+            {
+                "rank": i,
+                "repo": repo,
+                "short": short,
+                "gain": gain,
+                "gain_s": safe(r.get("gained", "")),
+                "total": safe(r.get("total", "")),
+                "desc": safe(r.get("desc", ""))[:120],
+                "cap": [w1, w2],
+            }
+        )
     print("Fetching B-roll art...")
     for it in items:
         art[it["repo"]] = repo_art(it["repo"])
     return items, art
 
+
 # ---------- scenes ----------
 CARD_DUR, ROLL_DUR = 2.6, 3.8
 HOOK_DUR, CTA_DUR = 2.5, 3.0
+
 
 def draw_card(d, it, ch, total, p):
     chapter_head(d, ch, total)
@@ -249,7 +277,9 @@ def draw_card(d, it, ch, total, p):
         center(d, W / 2, y, ln, fnt, WHITE)
         y += 105
     y0 = y + 30
-    glass_row(d, 60, y0, W - 60, y0 + 92, "Tăng trong tuần", f"+{it['gain']:,}".replace(",", "."), GREEN)
+    glass_row(
+        d, 60, y0, W - 60, y0 + 92, "Tăng trong tuần", f"+{it['gain']:,}".replace(",", "."), GREEN
+    )
     glass_row(d, 60, y0 + 112, W - 60, y0 + 204, "Tổng số sao", it["total"], WHITE)
     dl = wrap(d, it["desc"], F_TXT, W - 170)[:3]
     y = y0 + 240
@@ -257,13 +287,20 @@ def draw_card(d, it, ch, total, p):
         center(d, W / 2, y, ln, F_TXT, MUTED)
         y += 44
 
+
 def draw_roll(base_img, d, it, ch, total, p, cap_lines):
     # Ken Burns zoom 1.00 -> 1.09
     z = 1.0 + 0.09 * smooth(p)
     zw, zh = W, H
     cw, chh = int(zw * z), int(zh * z)
-    crop = base_img.crop(((base_img.width - cw) // 2, (base_img.height - chh) // 2 - int(30 * p),
-                          (base_img.width + cw) // 2, (base_img.height + chh) // 2 - int(30 * p)))
+    crop = base_img.crop(
+        (
+            (base_img.width - cw) // 2,
+            (base_img.height - chh) // 2 - int(30 * p),
+            (base_img.width + cw) // 2,
+            (base_img.height + chh) // 2 - int(30 * p),
+        )
+    )
     frame = crop.resize((W, H), Image.BILINEAR)
     # bottom scrim
     ov = Image.new("L", (1, H), 0)
@@ -284,6 +321,7 @@ def draw_roll(base_img, d, it, ch, total, p, cap_lines):
     draw_karaoke(d2, cap_lines, F_CAP, W / 2, 950, p)
     return out
 
+
 def draw_hook(d, p):
     chapter_head(d, 1, 12)
     center(d, W / 2, 150, "SỐ LIỆU THẬT • 10 REPO", F_EYE, RED)
@@ -293,23 +331,43 @@ def draw_hook(d, p):
     y = 730 + int(16 * (1 - smooth(min(1, p * 3))))
     d.rounded_rectangle([170, y, W - 170, y + 96], radius=48, fill=GREEN)
     center(d, W / 2, y + 24, "BẮT ĐẦU!", F_SUB, WHITE)
-    draw_karaoke(d, [[("Top", WHITE), ("10", RED), ("GitHub", WHITE), ("tuần", WHITE), ("này", WHITE)]], F_CAP, W / 2, 950, p)
+    draw_karaoke(
+        d,
+        [[("Top", WHITE), ("10", RED), ("GitHub", WHITE), ("tuần", WHITE), ("này", WHITE)]],
+        F_CAP,
+        W / 2,
+        950,
+        p,
+    )
+
 
 def draw_cta(d, top3):
     chapter_head(d, 12, 12)
     center(d, W / 2, 150, "REPO NÀO ĐÁNG CÀI NHẤT?", F_SUB, WHITE)
     y = 260
     for it in top3:
-        glass_row(d, 60, y, W - 60, y + 92, f"#{it['rank']} {it['short'][:18]}", f"+{it['gain']:,}".replace(",", "."), GREEN)
+        glass_row(
+            d,
+            60,
+            y,
+            W - 60,
+            y + 92,
+            f"#{it['rank']} {it['short'][:18]}",
+            f"+{it['gain']:,}".replace(",", "."),
+            GREEN,
+        )
         y += 112
     center(d, W / 2, y + 60, "Lưu lại • Follow để nhận", F_TXT, MUTED)
     center(d, W / 2, y + 108, "tin AI mỗi ngày", F_TXT, WHITE)
     center(d, W / 2, y + 180, "#GitHub #AI #LậpTrình", F_SMALL, (88, 166, 255))
 
+
 def main():
+    import shutil
+
     import imageio.v2 as iio
     import numpy as np
-    import shutil
+
     global GLOW
     GLOW = make_glow()
     items, art = load_items()
@@ -329,8 +387,13 @@ def main():
     total_dur = HOOK_DUR + len(items) * per_item + CTA_DUR
     N = int(total_dur * FPS)
     mp4 = os.path.join(BASE, "tiktok-github-v2.mp4")
-    w = iio.get_writer(mp4, fps=FPS, codec="libx264", quality=8,
-                       ffmpeg_params=["-pix_fmt", "yuv420p", "-movflags", "faststart"])
+    w = iio.get_writer(
+        mp4,
+        fps=FPS,
+        codec="libx264",
+        quality=8,
+        ffmpeg_params=["-pix_fmt", "yuv420p", "-movflags", "faststart"],
+    )
     cover_saved = False
     for i in range(N):
         t = i / FPS
@@ -354,8 +417,9 @@ def main():
                         draw_card(d, it, idx + 2, total_ch, 1.0)
                         out = img
                     else:
-                        out = draw_roll(base, d, it, idx + 2, total_ch,
-                                        (lt - CARD_DUR) / ROLL_DUR, it["cap"])
+                        out = draw_roll(
+                            base, d, it, idx + 2, total_ch, (lt - CARD_DUR) / ROLL_DUR, it["cap"]
+                        )
             else:
                 draw_cta(d, items[:3])
                 out = img
@@ -367,13 +431,22 @@ def main():
             print(f"  {i + 1}/{N}")
     w.close()
     print(f"Saved: {mp4} ({os.path.getsize(mp4) // 1024} KB)")
-    cap = ("Top 10 GitHub tuần này (số liệu thật, Phần 1): quán quân tăng hơn "
-           "8.000 sao chỉ trong 1 tuần! Repo nào đáng cài nhất? "
-           "#GitHub #LậpTrình #OpenSource #CôngNghệ #AI #TinCôngNghệ")
-    open(os.path.join(BASE, "tiktok-github-v2-caption.txt"), "w", encoding="utf-8").write(cap + "\n")
-    for f_ in ("tiktok-github-v2.mp4", "tiktok-github-v2-cover.png", "tiktok-github-v2-caption.txt"):
+    cap = (
+        "Top 10 GitHub tuần này (số liệu thật, Phần 1): quán quân tăng hơn "
+        "8.000 sao chỉ trong 1 tuần! Repo nào đáng cài nhất? "
+        "#GitHub #LậpTrình #OpenSource #CôngNghệ #AI #TinCôngNghệ"
+    )
+    open(os.path.join(BASE, "tiktok-github-v2-caption.txt"), "w", encoding="utf-8").write(
+        cap + "\n"
+    )
+    for f_ in (
+        "tiktok-github-v2.mp4",
+        "tiktok-github-v2-cover.png",
+        "tiktok-github-v2-caption.txt",
+    ):
         shutil.copy(os.path.join(BASE, f_), os.path.join(DOCS, f_))
     print("Copied to docs/")
+
 
 if __name__ == "__main__":
     main()
