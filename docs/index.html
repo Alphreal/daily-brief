@@ -20,36 +20,21 @@ body{background:#f7f7f5;color:#1a1a1a;font-family:ui-sans-serif,system-ui,-apple
 .sec{margin-top:28px}
 a{color:#0f62fe}
 h1{font-size:26px;margin:8px 0}h2{font-size:19px;margin:0 0 8px}h3{font-size:16px;margin:14px 0 6px}
-table{width:100%;border-collapse:collapse;font-size:14px}
-th,td{text-align:left;padding:8px 10px;border-bottom:1px solid #e7e5e4;vertical-align:top}
-th{background:#f7f7f5;font-weight:600}
-.placeholder{border:1.5px dashed #a8a29e;border-radius:12px;padding:14px 16px;margin:12px 0;background:#fafaf9;color:#57534e;font-size:14px;list-style:none}
 .toc{display:flex;flex-wrap:wrap;gap:8px;margin:12px 0 4px;position:sticky;top:0;z-index:5;background:#f7f7f5;padding:8px 0}
-.hero{text-align:center}
-.hero h1{font-size:30px}
 .hero3d{position:relative;overflow:hidden;border-radius:14px;border:1px solid #e7e5e4;background:radial-gradient(120% 100% at 50% 0%,#ffffff 0%,#f7f7f5 70%);padding:30px 20px;text-align:center;margin:4px 0 16px}
 .hero3d canvas{position:absolute;inset:0;width:100%;height:100%;pointer-events:none}
 .hero3d h1{position:relative;font-size:clamp(20px,6vw,30px);overflow-wrap:break-word}
 .hero3d .muted{position:relative}
 @media print{.hero3d canvas{display:none}}
-.chapter{background:#fff;border:1px solid #e7e5e4;border-radius:14px;padding:4px 20px 16px;margin:20px 0}
-.chapter h2{margin-top:14px}
 .toc a{background:#fff;border:1px solid #e7e5e4;border-radius:999px;padding:8px 14px;font-size:13px;color:#1a1a1a;text-decoration:none}
 @media(min-width:1100px){.wrap{max-width:1100px}.grid2{grid-template-columns:1fr 1fr 1fr}}
-@media print{.topbar{display:none}.toc{position:static;background:#fff}.wrap{max-width:100%;padding:0}body{background:#fff}.card,.tldr{break-inside:avoid}[data-aos]{opacity:1!important;transform:none!important}}
-@media (prefers-reduced-motion:reduce){[data-aos]{opacity:1!important;transform:none!important;transition:none!important}}
+@media print{.topbar{display:none}.toc{position:static;background:#fff}.wrap{max-width:100%;padding:0}body{background:#fff}.card,.tldr{break-inside:avoid}}
 </style>
 </head>
 <body>
 <div class="wrap mx-auto px-4">
 <div class="topbar"><a href="index.html">&larr; Alph</a><span class="muted">Daily Brief</span></div>
-<h1>NEWS</h1>
-<div class="tldr"><b>Latest</b> &mdash; start here, then browse below.</div>
-<div class="card"><a href="brief-2026-09-22-daily.html"><b>Brief 2026-09-22 (daily)</b></a> <span class="badge">2026-09-22</span></div>
-<div class="card"><a href="brief-2026-09-18-daily.html"><b>Brief 2026-09-18 (daily)</b></a> <span class="badge">2026-09-18</span></div>
-<div class="card"><a href="brief-2026-09-17-daily.html"><b>Brief 2026-09-17 (daily)</b></a> <span class="badge">2026-09-17</span></div>
-<div class="card"><a href="brief-2026-09-16-daily.html"><b>Brief 2026-09-16 (daily)</b></a> <span class="badge">2026-09-16</span></div>
-<div class="card"><a href="brief-2026-09-14-monday.html"><b>Brief 2026-09-14 (monday)</b></a> <span class="badge">2026-09-14</span></div>
+<h1>NEWS</h1><div class="tldr"><b>Latest</b> &mdash; start here, then browse below.</div><div class="card"><a href="brief-2026-09-22-daily.html"><b>Brief 2026-09-22 (daily)</b></a> <span class="badge">2026-09-22</span></div><div class="card"><a href="brief-2026-09-18-daily.html"><b>Brief 2026-09-18 (daily)</b></a> <span class="badge">2026-09-18</span></div><div class="card"><a href="brief-2026-09-17-daily.html"><b>Brief 2026-09-17 (daily)</b></a> <span class="badge">2026-09-17</span></div><div class="card"><a href="brief-2026-09-16-daily.html"><b>Brief 2026-09-16 (daily)</b></a> <span class="badge">2026-09-16</span></div><div class="card"><a href="brief-2026-09-14-monday.html"><b>Brief 2026-09-14 (monday)</b></a> <span class="badge">2026-09-14</span></div>
 </div>
 <script src="assets/vendor/aos/aos.js" defer></script>
 <script type="importmap">{"imports":{"three":"./assets/vendor/three/three.module.min.js"}}</script>
@@ -82,15 +67,14 @@ const pos = new Float32Array(n * 3), col = new Float32Array(n * 3);
 const ink = new THREE.Color('#1a1a1a'), blue = new THREE.Color('#0f62fe');
 let k = 0;
 for (let i = 0; i < cols; i++) {
-  for (let j = 0; j < rows; j++) {
-    pos[k*3] = (i / (cols-1) - 0.5) * (W - 24);
-    pos[k*3+1] = (0.5 - j / (rows-1)) * (H - 24);
-    pos[k*3+2] = 0;
-    const c = (k % 23 === 0) ? blue : ink;
-    col[k*3] = c.r; col[k*3+1] = c.g; col[k*3+2] = c.b;
-    k++;
-  }
-}
+for (let j = 0; j < rows; j++) {
+pos[k*3] = (i / (cols-1) - 0.5) * (W - 24);
+pos[k*3+1] = (0.5 - j / (rows-1)) * (H - 24);
+pos[k*3+2] = 0;
+const c = (k % 23 === 0) ? blue : ink;
+col[k*3] = c.r; col[k*3+1] = c.g; col[k*3+2] = c.b;
+k++;
+}}
 const geo = new THREE.BufferGeometry();
 geo.setAttribute('position', new THREE.BufferAttribute(pos, 3));
 geo.setAttribute('color', new THREE.BufferAttribute(col, 3));
@@ -99,18 +83,18 @@ scene.add(pts);
 let run = true, t = 0;
 const base = pos.slice();
 function frame() {
-  if (!run) return;
-  requestAnimationFrame(frame);
-  t += 0.012;
-  const p = geo.attributes.position.array;
-  for (let i = 0; i < n; i++) {
-    p[i*3+1] = base[i*3+1] + Math.sin(base[i*3] * 0.03 + t) * 7 + Math.cos(i * 0.4 + t * 0.7) * 4;
-  }
-  geo.attributes.position.needsUpdate = true;
-  renderer.render(scene, cam);
+if (!run) return;
+requestAnimationFrame(frame);
+t += 0.012;
+const p = geo.attributes.position.array;
+for (let i = 0; i < n; i++) {
+p[i*3+1] = base[i*3+1] + Math.sin(base[i*3] * 0.03 + t) * 7 + Math.cos(i * 0.4 + t * 0.7) * 4;
+}
+geo.attributes.position.needsUpdate = true;
+renderer.render(scene, cam);
 }
 if ('IntersectionObserver' in window) {
-  new IntersectionObserver(function(es){ run = es[0].isIntersecting && !document.hidden; if (run) frame(); }, {threshold: 0.05}).observe(hero);
+new IntersectionObserver(function(es){ run = es[0].isIntersecting && !document.hidden; if (run) frame(); }, {threshold: 0.05}).observe(hero);
 }
 document.addEventListener('visibilitychange', function(){ run = !document.hidden; if (run) frame(); });
 let rT;
